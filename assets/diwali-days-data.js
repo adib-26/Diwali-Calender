@@ -1,0 +1,502 @@
+/* -----------------------------------------------------------
+   AUTO-GENERATED — do not hand-edit.
+   Source of truth: assets/diwali_days.json
+   Regenerate with: python tools/sync_diwali_days_js.py
+
+   Embeds the calendar config as a JS global instead of a .json file that
+   has to be fetch()'d, so the page keeps working when opened directly via
+   the file:// protocol (see tools/sync_diwali_days_js.py docstring).
+----------------------------------------------------------- */
+window.DIWALI_DAYS_DATA = {
+  "_meta": {
+    "note": "A 21-day countdown to the five principal Diwali observances. Days 1-16 are preparation and reflection; Days 17-21 are Dhanteras, Naraka Chaturdashi (Choti Diwali), Lakshmi Puja (main Diwali), Govardhan Puja/Annakut, and Bhai Dooj. The main Diwali lamp (Day 19) sits at the mandala centre. Names and customs vary by region and community.",
+    "payloadTypes": "text | assets/image.png | mp4:assets/video.mp4",
+    "storyCard": "Every lamp opens one mobile-first story card. Optional diya.story is the short episode narration; description remains the expandable cultural note. Video files stay lazy-loaded from the mp4 payload path.",
+    "background": "assets/images/backgrounds/diwali-background.png (664x997)"
+  },
+  "lampScale": 0.9,
+  "_unlockScheduleNote": "Each diya unlocks at the start of its unlockDate (YYYY-MM-DD) in the visitor's device-local timezone. Change these dates manually to set the calendar schedule.",
+  "festivalStartDay": 17,
+  "mainDiwaliDay": 19,
+  "prototypeMandala": {
+    "guideColor": [
+      244,
+      183,
+      67
+    ],
+    "layers": [
+      {
+        "key": "prototypeOuter",
+        "ring": 1,
+        "path": "assets/21-day-reference-images/mandala-outer-8.png",
+        "size": 0.88,
+        "baseAlpha": 0.36
+      },
+      {
+        "key": "prototypeCentre",
+        "ring": 4,
+        "path": "assets/21-day-reference-images/mandala-centre-detailed.png",
+        "size": 0.48,
+        "baseAlpha": 0.42
+      }
+    ]
+  },
+  "_lampScaleNote": "Global size multiplier applied to every diya's pos.w/pos.h at load time (see hydrateDiyas() in sketch.js). 1 = default size, 1.15 = 15% bigger, 0.9 = 10% smaller. Each lamp keeps its own centre point, so scaling grows/shrinks it in place instead of shifting it. To resize just ONE lamp, edit that diya's own pos.w/pos.h below instead — lampScale multiplies on top of those.",
+  "mandala": {
+    "cx": 0.5,
+    "cy": 0.7,
+    "radii": {
+      "1": 0.4669,
+      "2": 0.1958,
+      "3": 0.0828
+    },
+    "ringExtraOffsetX": {
+      "1": 0,
+      "2": 0,
+      "3": 0
+    },
+    "ringExtraOffsetY": {
+      "1": -0.0791,
+      "2": -0.0791,
+      "3": -0.0791
+    }
+  },
+  "radialLayout": {
+    "_note": "21-day prototype: two 8-lamp rings, one 4-lamp festival ring, and main Diwali at the centre. All radii are fractions of canvas width.",
+    "cx": 0.5,
+    "cy": 0.6,
+    "jitterPx": 12,
+    "positionSeed": 20260731,
+    "centerId": 19,
+    "rings": [
+      {
+        "ring": 1,
+        "ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "radius": 0.35,
+        "angleOffsetDeg": -90
+      },
+      {
+        "ring": 2,
+        "ids": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "radius": 0.245,
+        "angleOffsetDeg": -67.5
+      },
+      {
+        "ring": 3,
+        "ids": [
+          17,
+          18,
+          20,
+          21
+        ],
+        "radius": 0.125,
+        "angleOffsetDeg": 45
+      }
+    ]
+  },
+  "banner": {
+    "x": 0.5,
+    "y": 0.135,
+    "w": 0.84,
+    "fontSize": 74,
+    "minFontSize": 16,
+    "lineHeight": 1.08,
+    "maxLines": 2,
+    "safeArea": {
+      "x0": 0.15,
+      "x1": 0.85,
+      "y0": 0.28,
+      "y1": 0.72
+    }
+  },
+  "credits": {
+    "enabled": true,
+    "text": "",
+    "color": "#FFD700",
+    "x": 0.1,
+    "y": 0.985,
+    "fontSize": 20
+  },
+  "scrollBanner": {
+    "_note": "The 'Countdown to Diwali' title banner. Edit 'text' to change what it says, or call scrollBanner.setText('...') from the browser console.",
+    "enabled": true,
+    "text": "Countdown to Diwali",
+    "textColor": "#7a1204",
+    "textShadow": "#ffe6b8"
+  },
+  "diyas": [
+    {
+      "id": 1,
+      "unlockDate": "2026-08-07",
+      "ring": 1,
+      "theme": "Rangoli",
+      "emoji": "🎨",
+      "description": "Rangoli are decorative patterns drawn at home entrances using coloured powders, flower petals, and rice. In many households, they form part of a welcome for Lakshmi, the goddess of prosperity.",
+      "payload": "text",
+      "cardImage": "assets/images/cards/rangoli-doorstep.png",
+      "pos": {
+        "x": 0.2097,
+        "y": 0.1538,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 2,
+      "unlockDate": "2026-08-08",
+      "ring": 1,
+      "theme": "Cleaning the Home",
+      "emoji": "🏠",
+      "description": "In the weeks before Diwali, many families deep-clean and decorate their homes. In many traditions, this creates a welcoming setting for Lakshmi, the goddess of prosperity.",
+      "payload": "text",
+      "cardImage": "assets/images/cards/cleaning-home-diwali.png",
+      "pos": {
+        "x": 0.4363,
+        "y": 0.1597,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 3,
+      "unlockDate": "2026-08-09",
+      "ring": 1,
+      "theme": "Rangoli in Motion",
+      "emoji": "✨",
+      "description": "As Dhanteras approaches, families may plan an auspicious purchase such as a utensil, gold, or silver. The observance itself is still ahead on Day 17, when it opens the five-day Diwali festival.",
+      "payload": "mp4:assets/videos/bonus/rangoli-showcase.mp4",
+      "pos": {
+        "x": 0.7537,
+        "y": 0.1733,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 4,
+      "unlockDate": "2026-08-10",
+      "ring": 1,
+      "theme": "Festival Sweets",
+      "emoji": "🍬",
+      "description": "Mithai — traditional Indian sweets — are central to Diwali. Kaju Katli (cashew fudge), Gulab Jamun, Ladoo, and Barfi are gifted between families to share in the joy of the festival.",
+      "payload": "text",
+      "cardImage": "assets/images/cards/festival-sweets-mithai.png",
+      "pos": {
+        "x": 0.7708,
+        "y": 0.3116,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 5,
+      "unlockDate": "2026-08-11",
+      "ring": 1,
+      "theme": "Traditional Dress",
+      "emoji": "👗",
+      "description": "Diwali is a time to wear new clothes. Women wear vibrant sarees and lehengas in jewel tones — deep reds, royal blues, and golds — while men don kurta-pajamas or sherwanis.",
+      "payload": "text",
+      "cardImage": "assets/images/cards/traditional-dress-diwali.png",
+      "pos": {
+        "x": 0.4524,
+        "y": 0.3099,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 6,
+      "unlockDate": "2026-08-12",
+      "ring": 1,
+      "theme": "The Diya",
+      "emoji": "🪔",
+      "description": "A diya is a small clay oil lamp. Ghee or sesame oil fuels the cotton wick. Rows of diyas on windowsills and doorsteps symbolise the victory of light over darkness, and knowledge over ignorance.",
+      "payload": "mp4:assets/videos/bonus/floating-diya.mp4",
+      "pos": {
+        "x": 0.1634,
+        "y": 0.3242,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 7,
+      "unlockDate": "2026-08-13",
+      "ring": 1,
+      "theme": "Fireworks",
+      "emoji": "🎆",
+      "description": "Some Diwali celebrations include fireworks or sparklers, while others choose quieter, lower-smoke ways to enjoy the lights. Local rules and household preferences vary.",
+      "payload": "mp4:assets/videos/bonus/sparkler-play.mp4",
+      "cardImage": "assets/images/cards/diwali-fireworks-sky.png",
+      "pos": {
+        "x": 0.1423,
+        "y": 0.471,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 8,
+      "unlockDate": "2026-08-14",
+      "ring": 1,
+      "theme": "Marigold Garlands",
+      "emoji": "🌼",
+      "description": "Marigolds — called Genda Phool — are widely used in Diwali decorations. Their vibrant orange and yellow hues are associated with auspiciousness, and garlands may adorn doorways, idols, and offering plates.",
+      "payload": "text",
+      "cardImage": "assets/images/cards/marigold-garland-doorway.png",
+      "pos": {
+        "x": 0.4775,
+        "y": 0.4813,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 9,
+      "unlockDate": "2026-08-15",
+      "ring": 2,
+      "theme": "Music & Dance",
+      "emoji": "🥁",
+      "description": "Music and dance bring energy to many community celebrations. The traditions vary widely by region: dhol and tabla may feature, while forms such as Garba and Dandiya are especially associated with western India and the Navratri season.",
+      "payload": "text",
+      "cardImage": "assets/images/cards/music-and-dance.png",
+      "pos": {
+        "x": 0.6969,
+        "y": 0.4827,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 10,
+      "unlockDate": "2026-08-16",
+      "ring": 2,
+      "theme": "Diwali Around the World",
+      "emoji": "🌍",
+      "description": "Diwali is celebrated by millions of people around the world, including communities in India, the United Kingdom, the United States, Canada, Singapore, Fiji, South Africa, and beyond. It is a national public holiday in several countries, while recognition elsewhere may be regional or local.",
+      "payload": "text",
+      "cardImage": "assets/images/cards/diwali-around-the-world.png",
+      "pos": {
+        "x": 0.7617,
+        "y": 0.6212,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 11,
+      "unlockDate": "2026-08-17",
+      "ring": 2,
+      "theme": "Share the Light",
+      "emoji": "✨",
+      "description": "As Diwali approaches, many families make time for generosity: checking in with neighbours, sharing food, or supporting a local cause. The exact customs differ, but the spirit of care is widely shared.",
+      "payload": "text",
+      "pos": {
+        "x": 0.5,
+        "y": 0.5,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 12,
+      "unlockDate": "2026-08-18",
+      "ring": 2,
+      "theme": "Auspicious Beginnings",
+      "emoji": "📖",
+      "description": "Diwali carries different stories across regions and communities. This is a moment to ask family members which stories, memories, or values make the festival meaningful to them.",
+      "payload": "mp4:assets/videos/bonus/ganesha-blessing.mp4",
+      "pos": {
+        "x": 0.5,
+        "y": 0.5,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 13,
+      "unlockDate": "2026-08-19",
+      "ring": 2,
+      "theme": "A Warm Welcome",
+      "emoji": "🏠",
+      "description": "Prepare a welcoming corner at home: tidy a shared space, add colour, or make room for people you care about. Keep the ritual personal and suited to your household.",
+      "payload": "text",
+      "pos": {
+        "x": 0.5,
+        "y": 0.5,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 14,
+      "unlockDate": "2026-08-20",
+      "ring": 2,
+      "theme": "Savour Something Sweet",
+      "emoji": "🍬",
+      "description": "Plan a sweet to make, buy, or share. Mithai traditions are wonderfully varied, so choose something that connects you to your family, friends, or local community.",
+      "payload": "text",
+      "pos": {
+        "x": 0.5,
+        "y": 0.5,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 15,
+      "unlockDate": "2026-08-21",
+      "ring": 2,
+      "theme": "A Mindful Celebration",
+      "emoji": "🌿",
+      "description": "Choose one way to celebrate thoughtfully: reusable decor, lower-smoke lighting choices, a quieter gathering, or simply taking time to enjoy the lights together.",
+      "payload": "text",
+      "pos": {
+        "x": 0.5,
+        "y": 0.5,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 16,
+      "unlockDate": "2026-08-22",
+      "ring": 2,
+      "theme": "Auspicious Beginnings",
+      "emoji": "🪔",
+      "description": "On the eve of the five Diwali days, pause and set an intention for the season: gratitude, renewal, connection, or a fresh beginning.",
+      "payload": "text",
+      "pos": {
+        "x": 0.5,
+        "y": 0.5,
+        "w": 0.078,
+        "h": 0.12
+      }
+    },
+    {
+      "id": 17,
+      "unlockDate": "2026-08-23",
+      "ring": 3,
+      "special": true,
+      "tint": [
+        95,
+        45,
+        155
+      ],
+      "theme": "Dhanteras — Day 1",
+      "emoji": "💛",
+      "description": "The first of the five principal Diwali days. Many households honour Dhanvantari and Lakshmi, light diyas, and make auspicious purchases of utensils, gold, or silver. Customs and deities emphasised vary by region and family.",
+      "payload": "text",
+      "pos": {
+        "x": 0.4986,
+        "y": 0.6479,
+        "w": 0.07,
+        "h": 0.108
+      }
+    },
+    {
+      "id": 18,
+      "unlockDate": "2026-08-24",
+      "ring": 3,
+      "special": true,
+      "tint": [
+        155,
+        30,
+        45
+      ],
+      "theme": "Naraka Chaturdashi (Choti Diwali) — Day 2",
+      "emoji": "🌙",
+      "description": "The second day, also called Choti Diwali in many North Indian traditions. In several regions it recalls Krishna's victory over Narakasura; oil baths, cleansing rituals, and diyas are common, with customs varying across communities.",
+      "payload": "text",
+      "cardImage": "assets/images/cards/choti-diwali-day2.png",
+      "pos": {
+        "x": 0.1808,
+        "y": 0.6317,
+        "w": 0.07,
+        "h": 0.108
+      }
+    },
+    {
+      "id": 19,
+      "unlockDate": "2026-08-25",
+      "ring": 4,
+      "special": true,
+      "tint": [
+        170,
+        120,
+        10
+      ],
+      "theme": "Happy Diwali!",
+      "emoji": "🎇",
+      "description": "The central Diwali observance and the new-moon night. Many households perform Lakshmi Puja, light rows of diyas, share food, and gather with family. The stories and rituals associated with this night differ by region, faith, and household.",
+      "payload": "mp4:assets/videos/bonus/lantern-breeze.mp4",
+      "pos": {
+        "x": 0.2486,
+        "y": 0.7931,
+        "w": 0.07,
+        "h": 0.108
+      }
+    },
+    {
+      "id": 20,
+      "unlockDate": "2026-08-26",
+      "ring": 3,
+      "special": true,
+      "tint": [
+        30,
+        95,
+        55
+      ],
+      "theme": "Govardhan Puja / Annakut — Day 4",
+      "emoji": "🙏",
+      "description": "Often observed as Govardhan Puja or Annakut, recalling Krishna sheltering villagers beneath Govardhan Hill and giving thanks for nature's abundance. In some regions this date is instead marked as Bali Pratipada or Padwa.",
+      "payload": "text",
+      "cardImage": "assets/images/cards/govardhan-puja-day4.png",
+      "pos": {
+        "x": 0.4202,
+        "y": 0.7859,
+        "w": 0.07,
+        "h": 0.108
+      }
+    },
+    {
+      "id": 21,
+      "unlockDate": "2026-08-27",
+      "ring": 3,
+      "special": true,
+      "tint": [
+        20,
+        60,
+        148
+      ],
+      "theme": "Bhai Dooj — Day 5",
+      "emoji": "💫",
+      "description": "The fifth and concluding day celebrates the bond between siblings. Many families observe a tilak and exchange blessings or gifts; it is also known as Bhai Phonta, Bhau Beej, or Yama Dwitiya in different regions.",
+      "payload": "text",
+      "pos": {
+        "x": 0.7699,
+        "y": 0.8011,
+        "w": 0.07,
+        "h": 0.108
+      }
+    }
+  ]
+};

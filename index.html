@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="An interactive Diwali countdown calendar — light a diya each day to reveal a festival tradition." />
+  <meta name="theme-color" content="#0D0D2B" />
+  <meta name="color-scheme" content="dark" />
+  <title>Diwali Advent Calendar</title>
+
+  <!-- Preload critical above-the-fold artwork so the main scene paints
+       instantly instead of popping in piece by piece. Paths are relative
+       so this also works when index.html is opened directly (file://). -->
+  <link rel="preload" as="image" href="assets/images/backgrounds/diwali-background.png" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/banner/title-banner.png" fetchpriority="high" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Poppins:wght@300;400&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Keeps interface controls from flashing before the canvas has painted. -->
+  <div id="loading-screen" class="loading-screen" role="status" aria-live="polite">
+    <div class="loading-screen-content">
+      <span class="loading-diya" aria-hidden="true">🪔</span>
+      <p>Preparing the Diwali calendar</p>
+    </div>
+  </div>
+
+  <div id="canvas-container">
+    <!-- CSS two-circle moon — shadow slides via translateX as days unlock -->
+    <div id="moon-container" class="moon-container" aria-hidden="true">
+      <div class="moon-light"></div>
+      <div id="moon-shadow" class="moon-shadow"></div>
+    </div>
+
+    <!-- Positioned against the canvas bounds by sketch.js, not the viewport. -->
+    <div id="title-utilities-tab" class="title-utilities-tab" aria-label="Calendar utilities">
+      <button id="calendar-guide-button" class="calendar-guide-button" type="button" aria-controls="calendar-guide" aria-expanded="false" aria-label="How to explore the Diwali calendar" title="How to explore">
+        <span aria-hidden="true">i</span>
+      </button>
+      <a id="credits-link" class="credits-link" href="contributors.html" aria-label="View project contributors" title="Project contributors">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 12a4.25 4.25 0 1 0 0-8.5 4.25 4.25 0 0 0 0 8.5Zm0 2.1c-4.18 0-7.5 2.15-7.5 4.8V21h15v-2.1c0-2.65-3.32-4.8-7.5-4.8Z" />
+        </svg>
+      </a>
+    </div>
+
+    <section id="calendar-guide" class="calendar-guide" role="dialog" aria-modal="true" aria-labelledby="calendar-guide-title" hidden>
+      <div class="calendar-guide-card">
+        <button class="calendar-guide-close" type="button" aria-label="Close calendar guide">×</button>
+        <p class="calendar-guide-kicker">A little guide</p>
+        <h2 id="calendar-guide-title">Light the way to Diwali</h2>
+        <p class="calendar-guide-intro">Each diya holds a small festival moment. Follow the glow and let the calendar unfold at its own pace.</p>
+        <ul class="calendar-guide-list">
+          <li><span aria-hidden="true">✦</span><p><strong>Choose a lamp</strong> to uncover a daily surprise, story, or festive discovery.</p></li>
+          <li><span aria-hidden="true">✦</span><p><strong>Light them in order</strong> and watch more of the mandala emerge around the calendar.</p></li>
+          <li><span aria-hidden="true">✦</span><p><strong>Keep an eye on the cards:</strong> a playful emoji can point to an extra hidden moment.</p></li>
+          <li><span aria-hidden="true">✦</span><p><strong>Notice the moon above</strong> as its phase changes with your journey through the days.</p></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <!-- Calendar config, embedded as a JS global (window.DIWALI_DAYS_DATA)
+       instead of a .json file loaded via fetch(). Browsers block fetch()/XHR
+       to local files under file://, which is why this must load as a plain
+       script instead of being read with p5's loadJSON(). Regenerate this
+       file from assets/diwali_days.json via tools/sync_diwali_days_js.py. -->
+  <script src="assets/diwali-days-data.js"></script>
+  <script src="assets/diwali-experiences.js"></script>
+
+  <!-- Diya and ScrollBanner classes must load before sketch -->
+  <script src="diya.js"></script>
+  <script src="scroll.js"></script>
+  <script src="sketch.js"></script>
+</body>
+</html>

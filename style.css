@@ -1,0 +1,2159 @@
+/* ─── Reset ─── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  /* Kills the grey/blue flash Android & iOS Safari paint on tap — every
+     interactive element gets its own deliberate hover/active state instead. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── Root — prevent browser gesture interference ─── */
+html, body {
+  overscroll-behavior: none;   /* kills pull-to-refresh / rubber-band scroll */
+  height: 100%;
+}
+
+/* ─── Body — deep indigo night ─── */
+body {
+  /* Subtle radial glow so the letterbox bands read as intentional design,
+     not empty space, when the 3:2 scene is centered on off-ratio screens. */
+  background:
+    radial-gradient(ellipse at center, #16163a 0%, #0D0D2B 70%);
+  background-color: #0D0D2B;
+  min-height: 100vh;
+  min-height: 100dvh; /* accounts for mobile browser chrome (address bar) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: opacity 200ms ease-in;
+}
+
+/* Initial paint guard. It stays opaque until the canvas has completed two
+   animation frames, preventing the positioned moon and credits control from
+   appearing before the calendar artwork. */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 50% 42%, #262050 0%, #12102f 45%, #0d0d2b 100%);
+  color: #ffe6a3;
+  transition: opacity 220ms ease, visibility 220ms step-end;
+}
+
+.loading-screen-content {
+  display: grid;
+  gap: 12px;
+  place-items: center;
+  text-align: center;
+}
+
+.loading-diya {
+  font-size: 38px;
+  filter: drop-shadow(0 0 16px rgba(255, 183, 43, 0.55));
+}
+
+.loading-screen p {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: clamp(12px, 3.5vw, 16px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+body.is-ready .loading-screen {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.is-leaving-for-contributors {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-screen { transition-duration: 0.01ms; }
+  body.is-leaving-for-contributors { transition-duration: 0.01ms; }
+}
+
+/* Warm gold text-selection to match the festival palette instead of the
+   default blue system highlight. */
+::selection {
+  background: rgba(255, 189, 61, 0.35);
+  color: #fff3d6;
+}
+
+/* ─── Canvas container ─── */
+#canvas-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Global state lock (CSS fallback) — while a lamp's fire animation is
+   playing, disable all pointer interaction on the canvas so rapid/overlapping
+   clicks can't reach it. Toggled from sketch.js via setAnimationLock(). */
+#canvas-container.animation-locked {
+  pointer-events: none;
+}
+
+canvas {
+  display: block;
+  width: 100vw !important;
+  max-width: 100vw;
+  height: auto !important;
+  max-height: 100vh;
+  max-height: 100dvh;
+  object-fit: contain;
+  /* Tapping a diya shouldn't wait out the browser's double-tap-to-zoom
+     delay, and shouldn't show a tap-highlight flash either. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ─────────────────────────────────────────
+   Two-circle moon phase (light disc + sliding sky shadow)
+───────────────────────────────────────── */
+
+/* ── Credits entry point ─────────────────────────────────────────────── */
+.credits-link {
+  position: absolute;
+  z-index: 10;
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 215, 0, 0.65);
+  border-radius: 50%;
+  background: rgba(28, 9, 0, 0.75);
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.35);
+  color: #ffe8a3;
+  text-decoration: none;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.credits-link svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.credits-link:hover {
+  background: rgba(91, 38, 1, 0.9);
+  box-shadow: 0 4px 20px rgba(255, 174, 24, 0.24);
+  transform: translateY(-2px);
+}
+
+.credits-link:focus-visible {
+  outline: 2px solid #fff3d6;
+  outline-offset: 3px;
+}
+
+/* ── Calendar guide ───────────────────────────────────────────────────── */
+.title-utilities-tab {
+  position: absolute;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid rgba(255, 218, 122, 0.62);
+  border-radius: 999px;
+  background: rgba(61, 22, 5, 0.94);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 236, 180, 0.22);
+}
+
+.title-utilities-tab::after {
+  width: 1px;
+  height: 15px;
+  background: rgba(255, 218, 122, 0.34);
+  content: "";
+  order: 1;
+}
+
+.calendar-guide-button {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: rgba(104, 42, 7, 0.94);
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 236, 180, 0.26);
+  color: #fff0ba;
+  cursor: pointer;
+  font-family: Georgia, serif;
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.title-utilities-tab .calendar-guide-button,
+.title-utilities-tab .credits-link {
+  position: static;
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 1px solid rgba(255, 220, 123, 0.35);
+  border-radius: 50%;
+  background: rgba(84, 30, 5, 0.84);
+  box-shadow: inset 0 1px 0 rgba(255, 236, 180, 0.12);
+}
+
+.title-utilities-tab .calendar-guide-button { order: 0; }
+.title-utilities-tab .credits-link { order: 2; }
+
+.title-utilities-tab .credits-link svg {
+  width: 14px;
+  height: 14px;
+}
+
+.title-utilities-tab .calendar-guide-button:hover,
+.title-utilities-tab .calendar-guide-button[aria-expanded="true"],
+.title-utilities-tab .credits-link:hover {
+  background: #a94c0a;
+  box-shadow: 0 3px 10px rgba(255, 181, 45, 0.2), inset 0 1px 0 rgba(255, 236, 180, 0.25);
+  transform: translateY(-1px);
+}
+
+.calendar-guide-button:focus-visible,
+.calendar-guide-close:focus-visible {
+  outline: 2px solid #fff3d6;
+  outline-offset: 3px;
+}
+
+.calendar-guide {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  background: rgba(8, 5, 25, 0.34);
+}
+
+.calendar-guide[hidden] { display: none; }
+
+.calendar-guide-card {
+  position: absolute;
+  width: min(360px, calc(100% - 24px));
+  padding: 22px 22px 19px;
+  border: 1px solid rgba(255, 210, 104, 0.72);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 92% 4%, rgba(255, 181, 45, 0.18), transparent 31%),
+    linear-gradient(145deg, rgba(65, 20, 6, 0.98), rgba(27, 10, 27, 0.98));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 235, 184, 0.16);
+  color: #fff2ca;
+  animation: calendarGuideIn 220ms ease-out both;
+}
+
+.calendar-guide.is-closing .calendar-guide-card {
+  animation: calendarGuideOut 180ms ease-in both;
+}
+
+@keyframes calendarGuideIn {
+  from { opacity: 0; transform: translateY(-7px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes calendarGuideOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(5px) scale(0.98); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calendar-guide-card,
+  .calendar-guide.is-closing .calendar-guide-card { animation-duration: 0.01ms; }
+}
+
+.calendar-guide-kicker {
+  margin-bottom: 5px;
+  color: #ffc95f;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.calendar-guide-card h2 {
+  margin-right: 25px;
+  color: #fff0bb;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: clamp(17px, 3vw, 21px);
+  line-height: 1.2;
+}
+
+.calendar-guide-intro {
+  margin: 9px 0 13px;
+  color: #f5dca7;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.calendar-guide-list {
+  display: grid;
+  gap: 9px;
+  list-style: none;
+}
+
+.calendar-guide-list li {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 8px;
+  align-items: start;
+  color: #f9e7be;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.calendar-guide-list li > span {
+  color: #ffca59;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.calendar-guide-list strong { color: #fff6d8; }
+
+.calendar-guide-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(255, 218, 127, 0.48);
+  border-radius: 50%;
+  background: rgba(35, 10, 5, 0.58);
+  color: #ffeab0;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.calendar-guide-close:hover {
+  background: rgba(123, 48, 4, 0.9);
+  transform: rotate(8deg);
+}
+
+@media (max-width: 420px) {
+  .credits-link {
+    width: 23px;
+    height: 23px;
+  }
+
+  .credits-link svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .calendar-guide-button {
+    width: 23px;
+    height: 23px;
+    font-size: 14px;
+  }
+
+  .title-utilities-tab .calendar-guide-button,
+  .title-utilities-tab .credits-link {
+    width: 23px;
+    height: 23px;
+  }
+
+  .title-utilities-tab .credits-link svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .title-utilities-tab { padding: 2px; }
+
+  .title-utilities-tab::after { height: 13px; }
+
+  .calendar-guide-card {
+    padding: 18px 17px 16px;
+    border-radius: 15px;
+  }
+}
+
+.moon-container {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  /* Soft rim light so the disc reads against the night sky */
+  box-shadow:
+    0 0 0 1px rgba(255, 230, 170, 0.18),
+    0 0 18px rgba(255, 214, 120, 0.28);
+  transition: box-shadow 0.32s ease;
+}
+
+/* Main Diwali is a new-moon night: retain a dark lunar disc but remove the
+   warm illuminated rim. updateMoonPhase() restores the normal rim on Day 20. */
+.moon-container.is-new-moon {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.52);
+}
+.moon-container.is-new-moon .moon-shadow {
+  background-color: #05050f;
+}
+
+.moon-light {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 32%, #fff6d2 0%, #f0d78a 42%, #d4b45a 100%);
+}
+
+.moon-shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  /* Match the night-sky tone sampled from the scene (~#100F2F / body #0D0D2B) */
+  background-color: #100f2f;
+  transform: translateX(100%);
+  transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.32s ease;
+  will-change: transform;
+}
+
+/* ─────────────────────────────────────────
+   Progress badge — countdown to Diwali
+───────────────────────────────────────── */
+
+.progress-badge {
+  --calendar-clock-scale: 1;
+  position: absolute;
+  /* top/right are set from JS (syncProgressBadgePosition in sketch.js),
+     pinned just under the bottom-right corner of the scroll banner (itself
+     measured off the canvas's own bounding box, not the viewport), so the
+     badge always stays inside the calendar artwork — even when the canvas
+     is letterboxed away from the screen edges. */
+  z-index: 5;                 /* above canvas art, but naturally covered by
+                                  .dim-overlay (15) / video modal when open */
+  font-family: 'Cinzel', serif;
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: #FFD700;
+  background: rgba(28, 9, 0, 0.55);
+  border: 1px solid rgba(184, 120, 10, 0.75);
+  border-radius: 12px;
+  padding: 4px 8px;
+  pointer-events: none;       /* purely informational, never blocks taps */
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  user-select: none;
+  scale: var(--calendar-clock-scale);
+  transform-origin: top right;
+}
+
+.flip-countdown-intro,
+.flip-countdown-unit {
+  font-size: 8px;
+  letter-spacing: 0.8px;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.flip-countdown-intro { color: #ffe5a0; }
+.flip-countdown-unit { color: #e1b84e; }
+
+.flip-number-group {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.flip-number {
+  position: relative;
+  display: inline-grid;
+  width: 29px;
+  height: 31px;
+  place-items: center;
+  color: #fff3c4;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: 0;
+  perspective: 120px;
+}
+
+.flip-number::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: 2px;
+  right: 2px;
+  top: 50%;
+  height: 1px;
+  background: rgba(25, 6, 0, 0.8);
+  box-shadow: 0 1px rgba(255, 223, 141, 0.18);
+}
+
+.flip-number-upper,
+.flip-number-lower {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 216, 112, 0.45);
+  border-radius: 4px;
+  background: linear-gradient(135deg, #9a4b12, #4a1805);
+  box-shadow: inset 0 0 7px rgba(255, 204, 82, 0.18), 0 1px 4px rgba(0, 0, 0, 0.34);
+}
+
+.flip-number-upper { clip-path: inset(0 0 50% 0); transform-origin: 50% 50%; }
+.flip-number-lower { clip-path: inset(50% 0 0 0); background: linear-gradient(135deg, #74300a, #351004); }
+.flip-number.is-flipping .flip-number-upper { animation: countdownFlip 520ms cubic-bezier(0.25, 0.72, 0.35, 1); }
+
+.flip-happy-message {
+  padding: 2px 5px;
+  color: #fff0ad;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 0 0 9px rgba(255, 205, 54, 0.75);
+  white-space: nowrap;
+}
+
+.progress-badge.is-celebration { background: rgba(104, 28, 5, 0.76); border-color: rgba(255, 209, 80, 0.9); }
+.progress-badge.is-celebration.is-flipping { animation: diwaliBadgeReveal 520ms ease-out; }
+
+@keyframes countdownFlip {
+  0% { transform: rotateX(0deg); filter: brightness(1); }
+  48% { transform: rotateX(-86deg); filter: brightness(1.25); }
+  52% { transform: rotateX(86deg); filter: brightness(1.25); }
+  100% { transform: rotateX(0deg); filter: brightness(1); }
+}
+
+@keyframes diwaliBadgeReveal {
+  0% { transform: rotateX(82deg) scale(0.9); opacity: 0.3; }
+  100% { transform: rotateX(0deg) scale(1); opacity: 1; }
+}
+
+@media (min-width: 768px) {
+  .progress-badge {
+    min-height: 40px;
+    gap: 7px;
+    padding: 5px 10px;
+  }
+  .flip-countdown-intro, .flip-countdown-unit { font-size: 9px; }
+  .flip-number { width: 32px; height: 34px; font-size: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-number.is-flipping .flip-number-upper,
+  .progress-badge.is-celebration.is-flipping { animation: none; }
+}
+
+/* ─────────────────────────────────────────
+   Cultural reveal card
+───────────────────────────────────────── */
+
+.dim-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 15;
+  cursor: pointer;
+  /* Flexbox perfectly centers the card (its only child) both ways,
+     regardless of the card's own height/content length. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Generous tap-safe margin around the card, padded further on notched
+     phones so the close button never sits under a hardware cutout. */
+  padding: 24px;
+  padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right))
+            max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+  animation: overlayFadeIn 0.24s cubic-bezier(0, 0, 0.38, 0.9) forwards;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Card shell — flex column so the header can stay fixed while only the
+   body (the text) scrolls internally. Sized generously on mobile but capped
+   on desktop so the mandala background behind it always stays visible. ── */
+.reveal-card {
+  position: relative;
+  z-index: 20;
+  cursor: default; /* card content isn't part of the "click backdrop to close" target */
+  width: 90%;
+  max-width: 400px;
+  max-height: min(75vh, 75dvh);
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(160deg, #1c0900 0%, #3a1500 60%, #1c0900 100%);
+  border: 1.5px solid #b8780a;
+  border-radius: 22px;
+  overflow: hidden;
+  text-align: left;
+  /* Distinct drop shadow lifts the card off the dimmed backdrop, layered
+     with the original warm glow for a premium, floating feel. */
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.55),
+    0 0 55px rgba(255, 150, 0, 0.22),
+    inset 0 0 40px rgba(255, 110, 0, 0.06);
+  animation: cardReveal 0.9s cubic-bezier(0, 0, 0.38, 0.9) forwards;
+}
+
+/* Small/large phones — a touch wider once there's room, so the two-line
+   title and body copy don't feel cramped on 400px+ wide screens. */
+@media (min-width: 400px) {
+  .reveal-card {
+    max-width: 420px;
+  }
+}
+
+/* Tablet & desktop — slightly shorter height cap so the card reads as a
+   compact panel, not a full-height sheet, on tall viewports; a bit wider
+   too now there's room to breathe without crowding the mandala backdrop. */
+@media (min-width: 768px) {
+  .reveal-card {
+    max-width: 440px;
+    max-height: 65vh;
+  }
+}
+
+@keyframes cardReveal {
+  from { transform: translateY(12px) scale(0.98); opacity: 0; }
+  to   { transform: translateY(0) scale(1);       opacity: 1; }
+}
+
+/* Decorative rangoli-inspired corner marks — plain (non-image) cards only */
+.reveal-card:not(.has-image)::before,
+.reveal-card:not(.has-image)::after {
+  content: "✦";
+  position: absolute;
+  color: #b8780a;
+  font-size: 14px;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 3;
+}
+.reveal-card:not(.has-image)::before { top: 14px;    left: 18px; }
+.reveal-card:not(.has-image)::after  { bottom: 14px; right: 18px; }
+
+/* ── Header — image, badge/title/divider, and the close button. Never
+   squishes or scrolls; only the body below it scrolls. ── */
+.card-header {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Hero-style photo banner (inspired by thenosamchronicles.com book cards):
+   full-bleed photo confined to the header's height, dark bottom scrim,
+   labels anchored over the scrim at the header's base. */
+.reveal-card.has-image .card-header {
+  height: clamp(150px, 32vh, 210px);
+  overflow: hidden;                 /* clips the Ken Burns zoom on the photo layer */
+  background-color: #1c0900;        /* fallback tone while loading / if the photo 404s */
+}
+
+/* A story episode uses the same card as static content. Landscape clips are
+   comfortably letterboxed; portrait clips expand into a Reels-like hero once
+   their dimensions are known (the class is added in sketch.js). */
+.reveal-card.has-video {
+  max-height: min(88vh, 88dvh);
+}
+.reveal-card.has-video .card-header {
+  overflow: hidden;
+  background: #100500;
+}
+.story-card-video {
+  display: block;
+  width: 100%;
+  height: clamp(180px, 34dvh, 270px);
+  object-fit: contain;
+  background:
+    radial-gradient(circle at center, #4d2105 0%, #160700 70%);
+}
+.reveal-card.has-portrait-video .story-card-video {
+  height: clamp(300px, 55dvh, 540px);
+}
+.reveal-card.has-video .card-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(8, 2, 0, 0) 43%, rgba(8, 2, 0, 0.88) 100%);
+  z-index: 1;
+}
+.reveal-card.has-video .card-header-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px 20px 14px;
+}
+
+/* Photo lives on its own layer (not the card background) so it can be
+   transform-animated (Ken Burns) independently of the card's reveal animation,
+   and so the fallback background-color above always shows through until it loads. */
+.card-image-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-color: #1c0900;
+  animation: kenBurns 12s ease-out forwards;
+}
+
+@keyframes kenBurns {
+  from { transform: scale(1.12); }
+  to   { transform: scale(1); }
+}
+
+.card-image-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 5, 0, 0)    0%,
+    rgba(15, 5, 0, 0.10) 22%,
+    rgba(14, 4, 0, 0.62) 46%,
+    rgba(10, 3, 0, 0.98) 100%
+  );
+  pointer-events: none;
+}
+
+.card-header-info {
+  position: relative;
+  z-index: 2;
+}
+
+.reveal-card.has-image .card-header-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px 20px 14px;
+}
+
+.reveal-card:not(.has-image) .card-header-info {
+  padding: 30px 30px 4px;
+  text-align: center;
+}
+
+/* ── Body — the only part that scrolls. flex-grow + min-height: 0 let the
+   flex item shrink below its content size so overflow-y: auto can kick in
+   instead of stretching the card past max-height. ── */
+.card-body-wrap {
+  position: relative;
+  z-index: 2;
+  flex-grow: 1;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;      /* scroll chaining never bleeds into the page behind it */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;                 /* allow vertical scroll inside the card */
+  min-height: 0;
+  padding: 18px 16px 8px 24px;
+}
+
+.reveal-card:not(.has-image) .card-body-wrap {
+  padding: 12px 16px 8px 24px;
+  text-align: center;
+}
+
+/* Themed, slim scrollbar — reads as an intentional part of the card
+   instead of a jarring default system scrollbar, on browsers that support it. */
+.card-body-wrap {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(184, 120, 10, 0.65) transparent;
+}
+.card-body-wrap::-webkit-scrollbar {
+  width: 6px;
+}
+.card-body-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+.card-body-wrap::-webkit-scrollbar-thumb {
+  background-color: rgba(184, 120, 10, 0.55);
+  border-radius: 999px;
+}
+.card-body-wrap::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 189, 61, 0.7);
+}
+
+/* Close button — clearly visible circular button, top-right of the header
+   (absolutely positioned relative to .card-header, so it always stays put
+   even when the body content scrolls). Sized generously by default so it's
+   comfortable to tap on any device, not just coarse-pointer ones. */
+.reveal-card-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid #b8780a;
+  background: rgba(184, 120, 10, 0.18);
+  color: #FFD700;
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  z-index: 25;
+}
+.reveal-card.has-image .reveal-card-close {
+  background: rgba(10, 3, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.reveal-card-close:hover {
+  background: rgba(184, 120, 10, 0.40);
+  border-color: #FFD700;
+  transform: scale(1.12);
+}
+.reveal-card-close:active {
+  transform: scale(0.96);
+}
+.reveal-card-close:focus-visible,
+.video-modal-close:focus-visible {
+  outline: 2px solid #FFD700;
+  outline-offset: 2px;
+}
+
+.card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Cinzel', serif;
+  font-size: 10.5px;
+  letter-spacing: 2px;
+  color: #FFD700;
+  text-transform: uppercase;
+  background: rgba(184, 120, 10, 0.22);
+  border: 1px solid #b8780a;
+  border-radius: 999px;
+  padding: 6px 14px;
+  margin-bottom: 12px;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(19px, 5vw, 24px);
+  font-weight: 700;
+  color: #FFD700;
+  text-shadow: 0 0 22px rgba(255, 215, 0, 0.45);
+  margin-bottom: 12px;
+  line-height: 1.3;
+  letter-spacing: 0.2px;
+  overflow-wrap: break-word;
+}
+
+.card-divider {
+  width: 55px;
+  height: 1.5px;
+  background: linear-gradient(90deg, #b8780a, transparent);
+  margin: 0;
+}
+
+.reveal-card:not(.has-image) .card-divider {
+  background: linear-gradient(90deg, transparent, #b8780a, transparent);
+  margin: 0 auto;
+}
+
+.card-body {
+  font-size: clamp(13.5px, 3.6vw, 14.5px);
+  line-height: 1.8;
+  color: #f0d07a;
+  font-weight: 300;
+  letter-spacing: 0.1px;
+  /* Subtle bottom padding so the last line never feels cut off abruptly
+     when scrolled all the way down. */
+  padding-bottom: 24px;
+}
+
+.card-experience-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #ffd700;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.1px;
+  text-transform: uppercase;
+}
+
+.is-bonus-video .card-experience-label {
+  color: #ffbd3d;
+}
+
+.story-copy {
+  margin: 0;
+}
+
+.story-video-placeholder {
+  margin: 14px 0 0;
+  padding: 9px 12px;
+  border: 1px dashed rgba(255, 215, 0, 0.55);
+  border-radius: 9px;
+  color: #ffe3a1;
+  font-size: 12px;
+  text-align: center;
+}
+
+.tradition-note {
+  margin: 16px 0 4px;
+  padding: 11px 13px;
+  border: 1px solid rgba(184, 120, 10, 0.48);
+  border-radius: 10px;
+  background: rgba(93, 41, 3, 0.24);
+}
+.tradition-note summary {
+  cursor: pointer;
+  color: #ffd700;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+}
+.tradition-note p {
+  margin: 10px 0 0;
+}
+
+.story-card-done {
+  display: block;
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px 16px;
+  border: 1px solid #b8780a;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #8f4c08, #c77f14);
+  color: #fff1bd;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+}
+.story-card-done:hover,
+.story-card-done:focus-visible {
+  background: linear-gradient(135deg, #b86608, #e6a222);
+}
+
+.story-replay {
+  margin-top: 14px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 215, 0, 0.62);
+  border-radius: 999px;
+  background: transparent;
+  color: #ffd700;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  cursor: pointer;
+}
+.story-replay:hover,
+.story-replay:focus-visible {
+  background: rgba(184, 120, 10, 0.28);
+}
+
+/* Video-first chapters deliberately withhold the written reflection while a
+   film is playing. This keeps the lamp interaction cinematic: watch first,
+   then choose to read, rather than competing for attention with copy. */
+.video-stage-copy {
+  margin: 0;
+  color: #ffe3a1;
+  font-size: 12px;
+  text-align: center;
+}
+
+.story-skip {
+  display: block;
+  margin: 12px auto 0;
+  border: 0;
+  padding: 6px 2px;
+  background: transparent;
+  color: #ffd700;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.video-first.story-details-hidden .story-copy,
+.video-first.story-details-hidden .story-replay,
+.video-first.story-details-hidden .tradition-note,
+.video-first.story-details-hidden .story-card-done {
+  display: none;
+}
+
+.video-first:not(.story-details-hidden) .video-stage-copy,
+.video-first:not(.story-details-hidden) .story-skip {
+  display: none;
+}
+
+.video-first:not(.story-details-hidden) .story-copy {
+  animation: reflectionReveal 0.35s ease-out both;
+}
+
+@keyframes reflectionReveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.info-card-placeholder {
+  display: grid;
+  width: 100%;
+  height: clamp(150px, 32vh, 210px);
+  place-items: center;
+  background: radial-gradient(circle, #6e330b 0%, #210b00 72%);
+  color: #ffd700;
+  font-size: 48px;
+}
+
+.reveal-card.has-image .card-body {
+  color: #f5e2b8;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* Three experimental cards hide a small treasure at their base. The card
+   itself becomes the player: its back holds a vertical video and returns to
+   the front automatically when playback completes. */
+.video-treasure-card {
+  display: block;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  perspective: 1200px;
+}
+.card-flip-stage {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 650ms cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+.video-treasure-card.is-video-flipped .card-flip-stage {
+  transform: rotateY(180deg);
+}
+.video-treasure-card.is-video-flipped .card-flip-front {
+  pointer-events: none;
+}
+.card-flip-back {
+  pointer-events: none;
+}
+.video-treasure-card.is-video-flipped .card-flip-back {
+  pointer-events: auto;
+}
+.card-flip-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+  border: 1.5px solid #b8780a;
+  border-radius: 22px;
+  background: linear-gradient(160deg, #1c0900 0%, #3a1500 60%, #1c0900 100%);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 55px rgba(255, 150, 0, 0.22), inset 0 0 40px rgba(255, 110, 0, 0.06);
+}
+.card-flip-front {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.video-treasure-card .card-header {
+  position: relative;
+  flex-shrink: 0;
+  height: clamp(150px, 32vh, 210px);
+  overflow: hidden;
+  background-color: #1c0900;
+}
+.video-treasure-card .card-header-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px 20px 14px;
+}
+.video-treasure-card .card-body-wrap {
+  flex-grow: 1;
+}
+.card-video-treasure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 18px auto 0;
+  padding: 0;
+  border: 1px solid rgba(255, 214, 111, 0.58);
+  border-radius: 50%;
+  background: rgba(119, 49, 7, 0.52);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 239, 187, 0.18);
+  color: #fff0b7;
+  cursor: pointer;
+  opacity: 0.82;
+  transition: transform 160ms ease, opacity 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+.card-video-treasure span:first-child { font-size: 24px; }
+.card-video-treasure:hover,
+.card-video-treasure:focus-visible {
+  opacity: 1;
+  background: #a94c0a;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.32), 0 0 0 3px rgba(255, 196, 64, 0.13);
+  transform: translateY(-2px) scale(1.06);
+}
+.card-flip-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  box-sizing: border-box;
+  transform: rotateY(180deg);
+  background: #090300;
+}
+.card-flip-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+  background: #090300;
+}
+.card-game-back {
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: radial-gradient(circle at 50% 14%, #70380c 0%, #210900 70%);
+}
+/* The game side needs more vertical room than the informational front side.
+   Without an explicit height, the flip stage inherits the shorter front face
+   and clips the status below the game controls. */
+.video-treasure-card.has-easter-egg.is-video-flipped .card-flip-stage {
+  height: min(510px, 74dvh);
+}
+.video-treasure-card.has-easter-egg .card-game-back {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.easter-game {
+  position: relative;
+  width: min(100%, 330px);
+  text-align: center;
+  color: #fff0bd;
+}
+.easter-game .reveal-card-close {
+  top: -8px;
+  right: -8px;
+}
+.easter-game-kicker {
+  display: block;
+  color: #ffd700;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+.easter-game h2 {
+  margin: 6px 0 8px;
+  color: #ffd700;
+  font-family: 'Cinzel', serif;
+  font-size: clamp(19px, 5vw, 24px);
+}
+.easter-game-instruction,
+.easter-game-status {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.easter-game-status {
+  min-height: 18px;
+  margin-top: 10px;
+  color: #ffd700;
+}
+.easter-tray,
+.annakut-plate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 66px;
+  margin: 16px auto 12px;
+  padding: 8px 14px;
+  border: 2px solid #c99027;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #7a3c0a 0%, #321100 72%);
+}
+.tray-slot {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px dashed rgba(255, 215, 0, 0.55);
+  border-radius: 50%;
+  font-size: 24px;
+  filter: grayscale(1) opacity(0.35);
+  transition: filter 180ms ease, transform 180ms ease;
+}
+.tray-slot.is-filled { filter: none; transform: scale(1.08); }
+.easter-sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+.easter-choice-row,
+.courtyard-diyas {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.easter-choice,
+.mini-diya,
+.rangoli-piece,
+.tilak-mark {
+  border: 1px solid rgba(255, 215, 0, 0.64);
+  color: #fff1bd;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 239, 187, 0.14);
+  transition: transform 160ms ease, filter 160ms ease, opacity 160ms ease, box-shadow 160ms ease;
+}
+.easter-choice:hover,
+.mini-diya:hover,
+.rangoli-piece:hover,
+.tilak-mark:hover,
+.easter-choice:focus-visible,
+.mini-diya:focus-visible,
+.rangoli-piece:focus-visible,
+.tilak-mark:focus-visible {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(255, 196, 64, 0.14);
+  transform: translateY(-2px) scale(1.06);
+}
+.easter-choice:disabled,
+.rangoli-piece:disabled,
+.tilak-mark:disabled { cursor: default; opacity: 0.42; }
+.easter-choice {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: rgba(119, 56, 7, 0.82);
+  font-size: 23px;
+  touch-action: none;
+}
+.easter-choice.image-choice {
+  width: 52px;
+  height: 52px;
+  padding: 4px;
+}
+.easter-choice.is-dragging {
+  z-index: 4;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+  opacity: 0.92;
+}
+.rangoli-board {
+  display: grid;
+  width: 126px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 9px;
+  margin: 16px auto 12px;
+}
+.rangoli-piece {
+  width: 58px;
+  height: 58px;
+  border-radius: 50% 50% 50% 10%;
+  background: #b53d5d;
+  font-size: 23px;
+}
+.rangoli-piece.image-piece {
+  padding: 3px;
+  border: 0;
+  background: transparent;
+}
+.rangoli-piece.petal-2 { background: #ce8620; }
+.rangoli-piece.petal-3 { background: #3e8f89; }
+.rangoli-piece.petal-4 { background: #7852aa; }
+.rangoli-piece.is-placed { filter: brightness(1.45); opacity: 1; }
+.rangoli-memory-board {
+  width: min(236px, 100%);
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+.memory-tile {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 221, 135, 0.78);
+  border-radius: 13px;
+  background: linear-gradient(145deg, #7d351e, #b76620);
+  box-shadow: inset 0 0 0 2px rgba(255, 225, 142, 0.15);
+}
+.memory-tile::after {
+  content: "✦";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #ffe09a;
+  font-size: 21px;
+  transition: opacity 150ms ease;
+}
+.memory-tile-art {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  opacity: 0;
+  transform: scale(0.65) rotate(-12deg);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+.memory-tile .easter-sprite {
+  width: 88%;
+  height: 88%;
+}
+.memory-tile.is-revealed,
+.memory-tile.is-matched {
+  background: rgba(255, 237, 192, 0.18);
+}
+.memory-tile.is-revealed::after,
+.memory-tile.is-matched::after { opacity: 0; }
+.memory-tile.is-revealed .memory-tile-art,
+.memory-tile.is-matched .memory-tile-art {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+.memory-tile.is-matched {
+  border-color: #ffe891;
+  box-shadow: 0 0 13px rgba(255, 193, 61, 0.78);
+}
+.ripple-courtyard {
+  position: relative;
+  width: min(270px, 100%);
+  height: 188px;
+  margin: 14px auto 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 214, 113, 0.18);
+  border-radius: 22px;
+  background: radial-gradient(circle at 50% 50%, #46200c 0%, #160600 71%);
+}
+.ripple-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255, 207, 73, 0.75);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+}
+.ripple-courtyard.is-rippling .ripple-halo {
+  animation: diyaRipple 1.2s ease-out forwards;
+}
+.ripple-diya,
+.ripple-central-diya {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+}
+.ripple-diya {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 44px;
+  height: 54px;
+  transform: translate(-50%, -50%);
+  filter: grayscale(1) brightness(0.3);
+  opacity: 0.72;
+  transition: filter 260ms ease, opacity 260ms ease;
+}
+.ripple-diya img,
+.ripple-central-diya img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.ripple-diya.is-lit {
+  filter: saturate(1.15) brightness(1.14) drop-shadow(0 0 9px rgba(255, 185, 42, 0.92));
+  opacity: 1;
+  animation: rippleOuterDiyaGlow 900ms ease-in-out var(--delay) infinite alternate;
+}
+.ripple-central-diya {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 67px;
+  height: 78px;
+  padding: 0;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  filter: grayscale(1) brightness(0.45);
+  transition: filter 180ms ease, transform 180ms ease;
+}
+.ripple-central-diya:hover,
+.ripple-central-diya:focus-visible {
+  filter: grayscale(0.25) brightness(1.03) drop-shadow(0 0 9px rgba(255, 192, 47, 0.75));
+  transform: translate(-50%, -50%) scale(1.08);
+}
+.ripple-courtyard.is-rippling .ripple-central-diya {
+  filter: saturate(1.2) brightness(1.2) drop-shadow(0 0 16px rgba(255, 183, 31, 1));
+  animation: rippleCentralDiyaGlow 760ms ease-in-out infinite alternate;
+}
+@keyframes diyaRipple {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(15); opacity: 0; }
+}
+@keyframes rippleOuterDiyaGlow { from { transform: translate(-50%, -50%) scale(1); } to { transform: translate(-50%, -50%) scale(1.1); } }
+@keyframes rippleCentralDiyaGlow { from { transform: translate(-50%, -50%) scale(1); } to { transform: translate(-50%, -50%) scale(1.1); } }
+.annakut-plate {
+  min-height: 76px;
+  border-radius: 48%;
+}
+.annakut-plate span {
+  display: block;
+  width: 48px;
+  height: 48px;
+  animation: offeringIn 200ms ease-out;
+}
+@keyframes offeringIn { from { transform: scale(0); } to { transform: scale(1); } }
+.bracelet-board {
+  position: relative;
+  width: min(278px, 100%);
+  height: 140px;
+  margin: 16px auto 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 215, 120, 0.34);
+  border-radius: 20px;
+  background: radial-gradient(circle at 50% 35%, #7a350d 0%, #2b0b00 75%);
+}
+.bracelet-board::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 1px solid rgba(255, 214, 122, 0.13);
+  border-radius: 15px;
+}
+.bracelet-thread {
+  position: absolute;
+  left: 11%;
+  width: 78%;
+  top: 62px;
+  height: 45px;
+  border: 4px solid #b51631;
+  border-top-color: #f0b52f;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(226, 63, 62, 0.5), inset 0 2px 2px rgba(255, 215, 107, 0.45);
+  opacity: 0.92;
+  transition: left 650ms ease, width 650ms ease, opacity 180ms ease;
+}
+.bracelet-board.is-woven .bracelet-thread {
+  left: 12%;
+  width: 76%;
+  opacity: 1;
+}
+.bracelet-knot {
+  position: absolute;
+  top: 75px;
+  width: 13px;
+  height: 13px;
+  border: 2px solid #f2b735;
+  border-radius: 50%;
+  background: #bd1d37;
+}
+.bracelet-knot-left { left: 11%; }
+.bracelet-knot-right { right: 11%; }
+.bracelet-thread-target {
+  position: absolute;
+  right: 9%;
+  top: 64px;
+  width: 26px;
+  height: 26px;
+  border: 2px dashed rgba(255, 218, 111, 0.92);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255, 194, 46, 0.6);
+  opacity: 0;
+  transition: opacity 180ms ease, background 180ms ease;
+}
+.bracelet-board.has-spool .bracelet-thread-target { opacity: 1; }
+.bracelet-board.is-woven .bracelet-thread-target {
+  background: rgba(255, 199, 58, 0.65);
+  border-style: solid;
+}
+.bracelet-strand-handle {
+  position: absolute;
+  left: 47%;
+  top: 74px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #ffe081;
+  border-radius: 50%;
+  color: #fff7cb;
+  background: #bd1c37;
+  box-shadow: 0 0 11px rgba(255, 189, 48, 0.74);
+  cursor: grab;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: opacity 180ms ease, filter 150ms ease;
+}
+.bracelet-board.has-spool .bracelet-strand-handle {
+  opacity: 1;
+  pointer-events: auto;
+}
+.bracelet-board.is-woven .bracelet-strand-handle {
+  opacity: 0;
+  pointer-events: none;
+}
+.bracelet-strand-handle.is-dragging { cursor: grabbing; filter: brightness(1.25); }
+.bracelet-slot {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 45px;
+  height: 45px;
+  transform: translate(-50%, -50%) scale(0.38);
+  opacity: 0;
+  filter: drop-shadow(0 0 6px rgba(255, 193, 51, 0.6));
+  transition: transform 260ms cubic-bezier(.2, .9, .2, 1.25), opacity 180ms ease;
+}
+.bracelet-slot .easter-sprite {
+  width: 100%;
+  height: 100%;
+}
+.bracelet-slot.is-filled {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  animation: braceletPieceIn 420ms ease-out;
+}
+.bracelet-slot-braceletThread { left: 25%; top: 62%; width: 52px; height: 52px; }
+.bracelet-slot-braceletBead { left: 43%; top: 51%; width: 31px; height: 31px; }
+.bracelet-slot-braceletCharm { left: 58%; top: 45%; width: 43px; height: 43px; }
+.bracelet-slot-braceletTassel { left: 75%; top: 61%; width: 39px; height: 45px; }
+.bracelet-choice-row { gap: 8px; }
+.bracelet-choice.image-choice { width: 49px; height: 49px; }
+.bracelet-choice:disabled { opacity: 0.24; }
+@keyframes braceletPieceIn {
+  0% { transform: translate(-50%, -50%) scale(0.25) rotate(-18deg); }
+  70% { transform: translate(-50%, -50%) scale(1.13) rotate(4deg); }
+  100% { transform: translate(-50%, -50%) scale(1) rotate(0); }
+}
+
+/* Day 21: an elastic bracelet is built along one continuous cord, with a
+   repeated bead pattern and a centre charm rather than only four loose props. */
+.bracelet-board.is-ready .bracelet-thread {
+  left: 11%;
+  width: 78%;
+  opacity: 0.92;
+}
+.bracelet-bead-run { position: absolute; inset: 0; }
+.bracelet-bead-slot {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  display: grid;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+.bracelet-board.has-selection .bracelet-bead-slot:not(.is-filled) {
+  border: 1px dashed rgba(255, 225, 151, 0.72);
+  box-shadow: 0 0 8px rgba(255, 189, 48, 0.36);
+  opacity: 0.86;
+}
+.bracelet-bead-slot.is-drop-target {
+  border-color: #fff0a8;
+  box-shadow: 0 0 0 4px rgba(255, 197, 64, 0.24), 0 0 16px rgba(255, 190, 52, 0.88);
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.12);
+}
+.bracelet-bead-slot.is-filled {
+  border: 0;
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  animation: braceletPieceIn 280ms ease-out;
+}
+.bracelet-bead-slot:hover,
+.bracelet-bead-slot:focus-visible,
+.bracelet-bead-slot.is-selected {
+  box-shadow: 0 0 0 3px rgba(255, 201, 73, 0.24), 0 0 12px rgba(255, 190, 52, 0.7);
+  outline: 0;
+  transform: translate(-50%, -50%) scale(1.12);
+}
+.bracelet-placed-bead,
+.bracelet-bead-choice > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba(255, 238, 161, 0.82);
+  border-radius: 50%;
+  box-shadow: inset 3px 3px 5px rgba(255, 255, 255, 0.35), inset -3px -3px 5px rgba(92, 38, 0, 0.36), 0 0 7px rgba(255, 181, 45, 0.65);
+}
+.bracelet-placed-gold,
+.bracelet-bead-gold > span { background: radial-gradient(circle at 33% 28%, #fff6b7, #e7a927 46%, #9a530b 100%); }
+.bracelet-placed-red,
+.bracelet-bead-red > span { background: radial-gradient(circle at 33% 28%, #ffcfb1, #c2363d 46%, #6d1022 100%); }
+.bracelet-bead-slot .easter-sprite {
+  width: 36px;
+  height: 36px;
+  object-position: center;
+  transform: translateZ(0);
+}
+.bracelet-bead-slot .easter-sprite[alt="Lotus charm"] { transform: scale(1.12); }
+.bracelet-bead-slot .easter-sprite[alt="Red tassel"] { transform: scale(1.18); }
+.bracelet-step {
+  min-height: 2.8em;
+  margin: 0 auto 10px;
+  color: #f0d07a;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+.bracelet-picker {
+  width: min(330px, 100%);
+  margin: 0 auto;
+  padding: 10px 8px 7px;
+  border: 1px solid rgba(255, 215, 120, 0.22);
+  border-radius: 16px;
+  background: rgba(54, 15, 3, 0.34);
+}
+.bracelet-picker-label {
+  margin: 0 0 7px;
+  color: rgba(255, 224, 146, 0.78);
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.bracelet-choice-row {
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.bracelet-choice { position: relative; }
+.bracelet-choice.is-selected {
+  border-color: #ffe081;
+  box-shadow: 0 0 0 3px rgba(255, 194, 46, 0.18), 0 0 16px rgba(255, 189, 48, 0.72), inset 0 1px 0 rgba(255, 244, 190, 0.4);
+  transform: translateY(-2px) scale(1.06);
+}
+.bracelet-choice small {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  color: rgba(255, 230, 169, 0.76);
+  font-family: 'Cinzel', serif;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+.bracelet-bead-choice {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  padding: 7px;
+  place-items: center;
+}
+.bracelet-choice-row .bracelet-choice {
+  margin-bottom: 14px;
+}
+.bracelet-lotus-choice .easter-sprite,
+.bracelet-tassel-choice .easter-sprite {
+  width: 94%;
+  height: 94%;
+  object-position: center;
+}
+.bracelet-lotus-choice .easter-sprite { transform: scale(1.08); }
+.bracelet-tassel-choice .easter-sprite { transform: scale(1.14); }
+.bracelet-actions {
+  display: flex;
+  gap: 7px;
+  margin-left: 5px;
+}
+.bracelet-action {
+  position: relative;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 215, 112, 0.72);
+  border-radius: 50%;
+  background: rgba(95, 31, 6, 0.84);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 235, 171, 0.16);
+  color: #ffe6a3;
+  cursor: pointer;
+  font-size: 21px;
+  font-weight: 700;
+  transition: transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+.bracelet-action:hover:not(:disabled),
+.bracelet-action:focus-visible:not(:disabled) {
+  background: #a94c0a;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.32), 0 0 0 3px rgba(255, 196, 64, 0.13);
+  transform: translateY(-2px);
+}
+.bracelet-action::after {
+  position: absolute;
+  bottom: calc(100% + 7px);
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: rgba(22, 7, 1, 0.94);
+  color: #ffe081;
+  content: attr(data-tooltip);
+  font-size: 9px;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(2px);
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+.bracelet-action:hover:not(:disabled)::after,
+.bracelet-action:focus-visible:not(:disabled)::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+.bracelet-drag-ghost {
+  position: fixed;
+  z-index: 10002;
+  width: 34px;
+  height: 34px;
+  padding: 4px;
+  border: 1px solid #ffe081;
+  border-radius: 50%;
+  background: rgba(88, 29, 5, 0.88);
+  box-shadow: 0 0 16px rgba(255, 190, 52, 0.72);
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(1.08);
+}
+.bracelet-drag-ghost .easter-sprite { width: 100%; height: 100%; }
+.bracelet-lotus-choice.image-choice,
+.bracelet-prep.image-choice { width: 46px; height: 46px; }
+.bracelet-knot-choice {
+  min-width: 48px;
+  height: 38px;
+  padding: 0 9px;
+  border-color: rgba(255, 215, 112, 0.74);
+  border-radius: 999px;
+  background: rgba(132, 34, 19, 0.78);
+  color: #ffe6a3;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+}
+.bracelet-board.is-knotted .bracelet-knot {
+  box-shadow: 0 0 13px rgba(255, 201, 56, 0.9);
+  transform: scale(1.16);
+}
+.tilak-board {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin: 16px auto 12px;
+}
+.tilak-mark {
+  width: 48px;
+  height: 30px;
+  border-radius: 999px;
+  background: #a02d29;
+  font-size: 12px;
+}
+.tilak-mark:nth-child(2) { width: 36px; background: #db921f; }
+.tilak-mark:nth-child(3) { width: 25px; background: #eee0a8; }
+.tilak-mark.is-placed { filter: brightness(1.5); opacity: 1; }
+.easter-game.is-complete::after {
+  content: "✦";
+  position: absolute;
+  inset: 35% 0 auto;
+  color: #fff4bb;
+  font-size: 72px;
+  opacity: 0;
+  animation: easterComplete 700ms ease-out forwards;
+  pointer-events: none;
+}
+@keyframes easterComplete { from { opacity: 0; transform: scale(0.25) rotate(-20deg); } to { opacity: 0.9; transform: scale(1.3) rotate(20deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .card-flip-stage, .mini-diya.is-lit { transition-duration: 0.01ms; animation-duration: 0.01ms; }
+}
+
+/* Desktop — slightly larger type now that there's more room to breathe */
+@media (min-width: 768px) {
+  .card-badge {
+    font-size: 11px;
+  }
+  .card-title {
+    font-size: clamp(20px, 2.4vw, 25px);
+  }
+  .card-body {
+    font-size: 14.5px;
+  }
+}
+
+/* ─────────────────────────────────────────
+   Native HTML5 video player — modal overlay
+   The browser's built-in <video controls> UI handles playback, seeking,
+   volume, and fullscreen. We only supply the centering modal chrome
+   and a custom close ("X") button.
+───────────────────────────────────────── */
+
+.video-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;               /* toggled to flex in JS when a video opens */
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+            max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+
+/* Videos use the same calm, staged arrival as the cultural reveal cards:
+   the backdrop settles first, then the player rises into place. */
+.video-modal-overlay.is-opening { animation: videoOverlayReveal 0.34s ease-out both; }
+.video-modal-overlay.is-opening .native-video-player {
+  animation: videoPanelReveal 0.76s cubic-bezier(0, 0, 0.38, 0.9) both;
+}
+.video-modal-overlay.is-opening .video-modal-close {
+  animation: videoCloseReveal 0.42s ease-out 0.18s both;
+}
+
+.video-modal-overlay.has-special-intro .native-video-player {
+  display: none;
+}
+
+.video-modal-overlay.has-special-intro .video-player-hint,
+.video-modal-overlay.has-special-intro .video-modal-close {
+  display: none;
+}
+
+.video-special-intro {
+  position: absolute;
+  z-index: 10001;
+  width: min(480px, calc(100% - 48px));
+  padding: 28px 26px;
+  border: 1px solid rgba(255, 213, 108, 0.78);
+  border-radius: 20px;
+  background-color: rgba(28, 9, 25, 0.96);
+  background-image:
+    linear-gradient(145deg, rgba(76, 25, 5, 0.88), rgba(28, 9, 25, 0.94)),
+    var(--video-special-intro-image, none);
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 16px 46px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(255, 237, 186, 0.22);
+  color: #fff2c9;
+  text-align: center;
+}
+
+.video-special-intro h2 {
+  margin: 0 0 12px;
+  color: #ffd66c;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: clamp(25px, 6vw, 36px);
+}
+
+.video-special-intro p {
+  margin: 0;
+  font-size: clamp(15px, 3.8vw, 18px);
+  font-weight: 600;
+  line-height: 1.65;
+}
+
+.video-special-intro-start {
+  margin-top: 21px;
+  min-height: 44px;
+  padding: 10px 19px 11px;
+  border: 1px solid #efbd58;
+  border-radius: 999px;
+  background: #a94c0a;
+  box-shadow: 0 4px 0 #632102, 0 7px 14px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 239, 183, 0.28);
+  color: #fff4cd;
+  cursor: pointer;
+  font-family: 'Cinzel', Georgia, serif;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.video-special-intro-start:hover,
+.video-special-intro-start:focus-visible {
+  background: #bf5d12;
+  box-shadow: 0 5px 0 #632102, 0 9px 18px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 239, 183, 0.34);
+  transform: translateY(-2px);
+}
+
+.video-special-intro-start:active {
+  box-shadow: 0 1px 0 #632102, 0 3px 8px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 239, 183, 0.2);
+  transform: translateY(2px);
+}
+
+.native-video-player {
+  display: block;
+  max-width: 90vw;
+  max-height: 85vh;
+  max-height: 85dvh;
+  margin: auto;
+  background: #000;
+  border-radius: 10px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.6),
+    0 0 0 1.5px rgba(184, 120, 10, 0.5);
+}
+
+@keyframes videoOverlayReveal {
+  from { background-color: rgba(0, 0, 0, 0); }
+  to   { background-color: rgba(0, 0, 0, 0.9); }
+}
+
+@keyframes videoPanelReveal {
+  from { transform: translateY(18px) scale(0.94); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes videoCloseReveal {
+  from { transform: scale(0.72); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ── Close ("X") button — fixed top-right corner of the modal ── */
+.video-modal-close {
+  position: absolute;
+  top: max(20px, env(safe-area-inset-top));
+  right: max(20px, env(safe-area-inset-right));
+  z-index: 10000;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid #b8780a;
+  background: rgba(0, 0, 0, 0.60);
+  color: #FFD700;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+}
+
+.video-modal-close:hover {
+  background: rgba(205, 28, 28, 0.90);
+  border-color: #FFD700;
+  transform: scale(1.08);
+}
+.video-modal-close:active {
+  transform: scale(0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-modal-overlay.is-opening,
+  .video-modal-overlay.is-opening .native-video-player,
+  .video-modal-overlay.is-opening .video-modal-close { animation: none; }
+}
+
+/* ─────────────────────────────────────────
+   Touch devices — larger tap targets
+───────────────────────────────────────── */
+@media (pointer: coarse) {
+  /* Blur effects trigger costly compositing on many mobile GPUs. The opaque
+     fallbacks preserve contrast without adding work during interaction. */
+  .credits-link,
+  .progress-badge,
+  .dim-overlay,
+  .reveal-card.has-image .reveal-card-close {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .reveal-card-close {
+    width: 44px;
+    height: 44px;
+    font-size: 24px;
+  }
+
+  .video-modal-close {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+  }
+}
+
+/* ─────────────────────────────────────────
+   Spring popup — jack-in-the-box 3D item reveal
+   Appears on top of the lamp, grows from the flame, auto-dismisses.
+───────────────────────────────────────── */
+@keyframes springPopIn {
+  0%   { transform: scale(0)    rotate(-8deg);  opacity: 0; }
+  55%  { transform: scale(1.20) rotate(5deg);   opacity: 1; }
+  75%  { transform: scale(0.93) rotate(-2deg);              }
+  90%  { transform: scale(1.05) rotate(1deg);               }
+  100% { transform: scale(1)    rotate(0deg);               }
+}
+
+@keyframes springPopOut {
+  0%   { transform: scale(1)    rotate(0deg);  opacity: 1; }
+  35%  { transform: scale(1.08) rotate(3deg);  opacity: 0.9; }
+  100% { transform: scale(0)    rotate(-8deg); opacity: 0; }
+}
+
+.spring-popup {
+  position: fixed;
+  /* Interactive so a tap dismisses it early (see sketch.js) — it sits
+     directly over the lamp it belongs to, so this doesn't block anything
+     else on the canvas. */
+  cursor: pointer;
+  z-index: 100;               /* above diyas/canvas but below the video overlay (9999) */
+  transform-origin: center center;
+  animation: springPopIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.spring-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  cursor: pointer;
+}
+.spring-popup-backdrop.is-dismissing {
+  pointer-events: none;
+}
+
+.spring-popup img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
+  pointer-events: none; /* clicks land on the wrapper so dismiss always fires */
+}
+
+.popup-found-label {
+  position: absolute;
+  left: 50%;
+  top: -12px;
+  width: max-content;
+  max-width: min(260px, 78vw);
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 215, 0, 0.7);
+  border-radius: 999px;
+  background: rgba(42, 12, 0, 0.9);
+  color: #fff0bb;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  line-height: 1.2;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.45);
+}
+
+.spring-popup.spring-popup-out {
+  animation: springPopOut 0.4s ease-in forwards;
+}
+
+/* ─────────────────────────────────────────
+   Flame "flare up" micro-interaction
+   Played when a user re-clicks a lamp that is already unlocked/lit,
+   right before its popup/card re-opens (see showFlameFlare() in sketch.js).
+   The flame itself is canvas-rendered, so this is a positioned DOM glow
+   overlay synced to the lamp's wick tip — same technique as .spring-popup.
+───────────────────────────────────────── */
+.flame-flare {
+  position: fixed;
+  pointer-events: none;       /* never blocks lamp clicks */
+  z-index: 90;                /* above canvas, below spring-popup (100) + cards */
+  transform: translate(-50%, -50%) scale(1);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 235, 170, 0.95) 0%,
+    rgba(255, 170, 40, 0.65)  40%,
+    rgba(255, 110, 0, 0)      75%
+  );
+}
+
+@keyframes flame-burst {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    filter: brightness(1);
+    opacity: 0.85;
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(1.5);
+    filter: brightness(1.9);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    filter: brightness(1);
+    opacity: 0.85;
+  }
+}
+
+.flame-flare.is-flaring {
+  animation: flame-burst 800ms ease-out forwards;
+}
+
+/* ─────────────────────────────────────────
+   Accessibility — respect "reduce motion"
+   Only the animations with no JS timer/animationend dependency are toned
+   down here (card reveal, overlay fade, Ken Burns photo zoom). The spring
+   popup and flame-flare animations are left alone since sketch.js times
+   their teardown to match the animation's own duration.
+───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .dim-overlay {
+    animation-duration: 0.01ms;
+  }
+  .reveal-card {
+    animation-duration: 0.01ms;
+  }
+  .card-image-photo {
+    animation: none;
+    transform: scale(1);
+  }
+  .moon-shadow {
+    transition-duration: 0.01ms;
+  }
+}
+
