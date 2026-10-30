@@ -503,15 +503,24 @@ class Diya {
     pop();
   }
 
-  /* ── Day number label on unlit diya ── */
+  /* Day 19 is Diwali, 8 November 2026. Earlier lamps count back one day each. */
+  calendarStamp() {
+    const date = new Date(2026, 10, 8);
+    date.setDate(date.getDate() + (this.id - 19));
+    const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    return { month: months[date.getMonth()], day: String(date.getDate()) };
+  }
+
+  /* ── Calendar date on the diya bowl (OCT 21 … NOV 8 …) ── */
   drawDayLabel(x, y, w, h, alpha) {
     if (alpha <= 0) return;
+    const stamp = this.calendarStamp();
     // Position text in the visual centre of the shallow bowl
     const bowlCentreX = x + w * 0.44;
-    const bowlCentreY = y + h * 0.67;
+    const bowlCentreY = y + h * 0.66;
     const bH = h * 0.30;
     push();
-    // A light outline gives the number contrast against the dark oil cavity
+    // A light outline gives the date contrast against the dark oil cavity
     // without introducing a separate visual element around the lamp.
     // One restrained, analogous gold family keeps the lamp labels legible
     // without adding a second rainbow beside the colourful mandala. The five
@@ -522,13 +531,17 @@ class Diya {
       : [232, 181, 82];  // muted marigold
 
     stroke(isActive ? 76 : 58, isActive ? 37 : 26, isActive ? 8 : 8, 220 * alpha);
-    strokeWeight(Math.max(1, bH * 0.075));
+    strokeWeight(Math.max(1, bH * 0.06));
     fill(isActive ? activeR : 255, isActive ? activeG : 239, isActive ? activeB : 191, 255 * alpha);
     textAlign(CENTER, CENTER);
     textStyle(BOLD);
     textFont("Cinzel, Georgia, serif");
-    textSize(this.id >= 10 ? bH * 0.58 : bH * 0.68);
-    text(this.id, bowlCentreX, bowlCentreY);
+    const monthSize = bH * 0.34;
+    const daySize = bH * 0.56;
+    textSize(monthSize);
+    text(stamp.month, bowlCentreX, bowlCentreY - daySize * 0.38);
+    textSize(daySize);
+    text(stamp.day, bowlCentreX, bowlCentreY + monthSize * 0.42);
     pop();
   }
 
