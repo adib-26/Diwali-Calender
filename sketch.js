@@ -420,17 +420,15 @@ function configureRenderRate() {
 
 /* ── Date-based lamp access ───────────────────────────────────────────────
    `unlockDate` deliberately uses a date-only YYYY-MM-DD value, so changing
-   the JSON is enough to update the release schedule. The visitor's device
-   timezone determines when a new local calendar day begins. A missing date
-   remains available for backwards compatibility with older calendar configs. ── */
-function calendarDateStamp() {
-  const now = new Date();
+   the JSON is enough to update the release schedule. "Today" is the calendar
+   date in the visitor's device timezone. A missing date remains available
+   for backwards compatibility. ── */
+function calendarDateStamp(now = new Date()) {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 
-function isDiyaUnlocked() {
-  // Published calendar: every lamp can be opened, regardless of unlockDate.
-  return true;
+function isDiyaUnlocked(diya, today = calendarDateStamp()) {
+  return !diya.unlockDate || diya.unlockDate <= today;
 }
 
 function scheduledDaysToMainDiwali() {

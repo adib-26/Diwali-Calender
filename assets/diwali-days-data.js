@@ -15,7 +15,7 @@ window.DIWALI_DAYS_DATA = {
     "background": "assets/images/backgrounds/diwali-background.png (664x997)"
   },
   "lampScale": 0.9,
-  "_unlockScheduleNote": "Each diya unlocks at the start of its unlockDate (YYYY-MM-DD) in the visitor's device-local timezone. Change these dates manually to set the calendar schedule.",
+  "_unlockScheduleNote": "Each diya unlocks at the start of its unlockDate (YYYY-MM-DD) in the visitor's device timezone. Day 19 is 8 November 2026. Change these dates manually to set the calendar schedule.",
   "festivalStartDay": 17,
   "mainDiwaliDay": 19,
   "prototypeMandala": {
@@ -145,7 +145,7 @@ window.DIWALI_DAYS_DATA = {
   "diyas": [
     {
       "id": 1,
-      "unlockDate": "2026-08-07",
+      "unlockDate": "2026-10-21",
       "ring": 1,
       "theme": "Rangoli",
       "emoji": "🎨",
@@ -161,7 +161,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 2,
-      "unlockDate": "2026-08-08",
+      "unlockDate": "2026-10-22",
       "ring": 1,
       "theme": "Cleaning the Home",
       "emoji": "🏠",
@@ -177,7 +177,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 3,
-      "unlockDate": "2026-08-09",
+      "unlockDate": "2026-10-23",
       "ring": 1,
       "theme": "Rangoli in Motion",
       "emoji": "✨",
@@ -192,7 +192,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 4,
-      "unlockDate": "2026-08-10",
+      "unlockDate": "2026-10-24",
       "ring": 1,
       "theme": "Festival Sweets",
       "emoji": "🍬",
@@ -208,7 +208,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 5,
-      "unlockDate": "2026-08-11",
+      "unlockDate": "2026-10-25",
       "ring": 1,
       "theme": "Traditional Dress",
       "emoji": "👗",
@@ -224,7 +224,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 6,
-      "unlockDate": "2026-08-12",
+      "unlockDate": "2026-10-26",
       "ring": 1,
       "theme": "The Diya",
       "emoji": "🪔",
@@ -239,7 +239,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 7,
-      "unlockDate": "2026-08-13",
+      "unlockDate": "2026-10-27",
       "ring": 1,
       "theme": "Fireworks",
       "emoji": "🎆",
@@ -255,7 +255,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 8,
-      "unlockDate": "2026-08-14",
+      "unlockDate": "2026-10-28",
       "ring": 1,
       "theme": "Marigold Garlands",
       "emoji": "🌼",
@@ -271,7 +271,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 9,
-      "unlockDate": "2026-08-15",
+      "unlockDate": "2026-10-29",
       "ring": 2,
       "theme": "Music & Dance",
       "emoji": "🥁",
@@ -287,7 +287,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 10,
-      "unlockDate": "2026-08-16",
+      "unlockDate": "2026-10-30",
       "ring": 2,
       "theme": "Diwali Around the World",
       "emoji": "🌍",
@@ -303,7 +303,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 11,
-      "unlockDate": "2026-08-17",
+      "unlockDate": "2026-10-31",
       "ring": 2,
       "theme": "Share the Light",
       "emoji": "✨",
@@ -318,7 +318,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 12,
-      "unlockDate": "2026-08-18",
+      "unlockDate": "2026-11-01",
       "ring": 2,
       "theme": "Auspicious Beginnings",
       "emoji": "📖",
@@ -333,7 +333,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 13,
-      "unlockDate": "2026-08-19",
+      "unlockDate": "2026-11-02",
       "ring": 2,
       "theme": "A Warm Welcome",
       "emoji": "🏠",
@@ -348,7 +348,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 14,
-      "unlockDate": "2026-08-20",
+      "unlockDate": "2026-11-03",
       "ring": 2,
       "theme": "Savour Something Sweet",
       "emoji": "🍬",
@@ -363,7 +363,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 15,
-      "unlockDate": "2026-08-21",
+      "unlockDate": "2026-11-04",
       "ring": 2,
       "theme": "A Mindful Celebration",
       "emoji": "🌿",
@@ -378,7 +378,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 16,
-      "unlockDate": "2026-08-22",
+      "unlockDate": "2026-11-05",
       "ring": 2,
       "theme": "Auspicious Beginnings",
       "emoji": "🪔",
@@ -393,7 +393,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 17,
-      "unlockDate": "2026-08-23",
+      "unlockDate": "2026-11-06",
       "ring": 3,
       "special": true,
       "tint": [
@@ -414,7 +414,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 18,
-      "unlockDate": "2026-08-24",
+      "unlockDate": "2026-11-07",
       "ring": 3,
       "special": true,
       "tint": [
@@ -436,7 +436,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 19,
-      "unlockDate": "2026-08-25",
+      "unlockDate": "2026-11-08",
       "ring": 4,
       "special": true,
       "tint": [
@@ -457,7 +457,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 20,
-      "unlockDate": "2026-08-26",
+      "unlockDate": "2026-11-09",
       "ring": 3,
       "special": true,
       "tint": [
@@ -479,7 +479,7 @@ window.DIWALI_DAYS_DATA = {
     },
     {
       "id": 21,
-      "unlockDate": "2026-08-27",
+      "unlockDate": "2026-11-10",
       "ring": 3,
       "special": true,
       "tint": [
