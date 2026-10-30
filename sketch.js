@@ -420,19 +420,12 @@ function configureRenderRate() {
 
 /* ── Date-based lamp access ───────────────────────────────────────────────
    `unlockDate` deliberately uses a date-only YYYY-MM-DD value, so changing
-   the JSON is enough to update the release schedule. "Today" is the calendar
-   date in Malaysia (Asia/Kuala_Lumpur), not the visitor's device timezone.
-   A missing date remains available for backwards compatibility. ── */
-const MALAYSIA_TIME_ZONE = "Asia/Kuala_Lumpur";
-
-function calendarDateStamp(now = new Date()) {
-  // en-CA formats the zoned date as YYYY-MM-DD, which compares with unlockDate.
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: MALAYSIA_TIME_ZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
+   the JSON is enough to update the release schedule. The visitor's device
+   timezone determines when a new local calendar day begins. A missing date
+   remains available for backwards compatibility with older calendar configs. ── */
+function calendarDateStamp() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 
 function isDiyaUnlocked(diya, today = calendarDateStamp()) {
