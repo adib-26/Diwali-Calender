@@ -27,6 +27,17 @@ Save as `assets/videos/card-stories/day-15-floating-diya.mp4`.
 > warm amber against deep indigo, tactile handmade texture, peaceful and
 > reverent Diwali atmosphere, no text, no logos, no watermark, no sudden cuts.
 
+## Day 8 — Marigold Garlands
+
+Save as `assets/videos/card-stories/diwali-marigold-doorway-glide-rev22-1080x1920-30fps-watermarked.mp4`.
+
+> Cinematic photorealistic vertical 9:16 Diwali film, a slow upward glide along a
+> thick garland of fresh orange and yellow marigolds hanging in a doorway.
+> Individual petals catch warm lamplight and sway slightly in a gentle breeze;
+> a clay diya glows softly out of focus behind the flowers. Rich saffron, gold,
+> and deep evening blue, intimate and welcoming, shallow depth of field, no
+> people, no text, no logos, no watermark, no sudden cuts.
+
 ## Day 7 — Sparkler moment
 
 Save as `assets/videos/card-stories/day-07-sparkler.mp4`.

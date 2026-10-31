@@ -2382,7 +2382,8 @@ function resolveImagePath(payload) {
 }
 
 /* -----------------------------------------------------------
-   Floating ember particles (upward, warm golden)
+   Floating ember particles. Three depths rise slowly across the
+   scene, the way snow drifts down on the winter calendar.
 ----------------------------------------------------------- */
 
 function initEmbers() {
@@ -2390,37 +2391,61 @@ function initEmbers() {
 }
 
 function drawEmbers(litCount) {
-  const intensityRatio = 0.15 + (litCount / Math.max(diyas.length, 1)) * 0.85;
+  // A few lit lamps warm the drift, but embers stay visible before any lamp is opened.
+  const warmthBoost = 0.85 + (litCount / Math.max(diyas.length, 1)) * 0.15;
 
   noStroke();
-  for (let e of embers) {
-    const a = e.baseAlpha * (0.5 + Math.sin(frameCount * 0.08 + e.phase) * 0.5) * intensityRatio;
-    fill(255, 160 + e.warmth, 10, a * 220);
+  for (const e of embers) {
+    const flicker = 0.62 + Math.sin(frameCount * e.flicker + e.phase) * 0.38;
+    const alpha = e.baseAlpha * flicker * warmthBoost;
+
+    fill(e.r, e.g * 0.55, e.b, alpha * 80);
+    ellipse(e.x, e.y, e.size * 3.4);
+    fill(255, e.g, e.b + 40, alpha * 220);
     ellipse(e.x, e.y, e.size);
 
     e.y -= e.speed;
-    e.x += Math.sin(frameCount * 0.05 + e.phase) * 0.4;
+    e.x += Math.sin(frameCount * e.sway + e.phase) * e.drift;
 
-    if (e.y < -e.size) {
-      e.y = height + random(30);
+    if (e.y < -e.size * 2) {
+      e.y = height + random(24, 90);
       e.x = random(width);
     }
+    if (e.x < -12) e.x = width + 12;
+    if (e.x > width + 12) e.x = -12;
   }
 }
 
 function rebuildEmbers() {
+  const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || false;
+  const coarse = window.matchMedia?.("(pointer: coarse)").matches || window.innerWidth < 768;
+  const scale = Math.max(0.7, canvasScale || 1);
+  const layers = reduceMotion ? 1 : 3;
+  // Dense enough to read like the winter calendar's snowfall, rising instead of falling.
+  const perLayer = reduceMotion
+    ? 36
+    : Math.max(coarse ? 220 : 440, Math.round((coarse ? 300 : 640) * scale));
+
   embers = [];
-  const minimum = reducedMotion ? 14 : compactViewport ? 28 : 44;
-  const count = Math.max(minimum, Math.round(76 * (canvasScale || 1)));
-  for (let i = 0; i < count; i++) {
-    embers.push({
-      x:         random(width),
-      y:         random(height),
-      speed:     random(0.35, 1.4),
-      size:      random(2, 5),
-      warmth:    random(0, 95),
-      baseAlpha: random(0.35, 1.0),
-      phase:     random(TWO_PI),
-    });
+  for (let layer = 0; layer < layers; layer++) {
+    const depth = layer + 1;
+    for (let i = 0; i < perLayer; i++) {
+      const gold = random() < 0.45;
+      embers.push({
+        x: random(width),
+        // Keep the sky as full as the fire at the bottom.
+        y: random() < 0.6 ? random(height * 0.7) : random(height),
+        speed: random(0.18, 0.55) * depth * (reduceMotion ? 0.4 : 1),
+        size: random(1.5, 2.8) * (0.65 + depth * 0.38) * Math.min(scale, 1.6),
+        baseAlpha: random(0.55, 1) * (0.55 + depth * 0.18),
+        phase: random(TWO_PI),
+        flicker: random(0.035, 0.08),
+        sway: random(0.012, 0.028),
+        drift: random(0.22, 0.65) * (depth === 1 ? 0.45 : 1),
+        r: 255,
+        g: gold ? random(186, 230) : random(110, 168),
+        b: gold ? random(40, 90) : random(12, 36),
+      });
+    }
   }
 }
