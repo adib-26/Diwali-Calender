@@ -2391,24 +2391,32 @@ function initEmbers() {
 }
 
 function drawEmbers(litCount) {
-  // A few lit lamps warm the drift, but embers stay visible before any lamp is opened.
-  const warmthBoost = 0.85 + (litCount / Math.max(diyas.length, 1)) * 0.15;
+  // Keep embers clearly visible from the first visit, with a slight warm boost as diyas light.
+  const warmthBoost = 0.92 + (litCount / Math.max(diyas.length, 1)) * 0.08;
+  const mandalaCx = width * 0.5;
+  const mandalaCy = height * 0.6;
+  const mandalaR2 = (width * 0.34) * (width * 0.34);
 
   noStroke();
   for (const e of embers) {
-    const flicker = 0.62 + Math.sin(frameCount * e.flicker + e.phase) * 0.38;
-    const alpha = e.baseAlpha * flicker * warmthBoost;
+    const flicker = 0.84 + Math.sin(frameCount * e.flicker + e.phase) * 0.16;
+    const dx = e.x - mandalaCx;
+    const dy = e.y - mandalaCy;
+    // Soften over the mandala centre so the mandala pattern stays crisp.
+    const mandalaShade = dx * dx + dy * dy < mandalaR2 ? 0.5 : 1;
+    const a = e.alpha * flicker * warmthBoost * mandalaShade;
 
-    fill(e.r, e.g * 0.55, e.b, alpha * 80);
-    ellipse(e.x, e.y, e.size * 3.4);
-    fill(255, e.g, e.b + 40, alpha * 220);
+    // Subtle warm ember rim + warm gold core (no oversized halo that clouds the mandala).
+    fill(255, e.g * 0.62, 16, a * 0.25);
+    ellipse(e.x, e.y, e.size * 1.8);
+    fill(255, e.g, e.b, a);
     ellipse(e.x, e.y, e.size);
 
     e.y -= e.speed;
     e.x += Math.sin(frameCount * e.sway + e.phase) * e.drift;
 
     if (e.y < -e.size * 2) {
-      e.y = height + random(24, 90);
+      e.y = height + random(12, 60);
       e.x = random(width);
     }
     if (e.x < -12) e.x = width + 12;
@@ -2419,32 +2427,31 @@ function drawEmbers(litCount) {
 function rebuildEmbers() {
   const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || false;
   const coarse = window.matchMedia?.("(pointer: coarse)").matches || window.innerWidth < 768;
-  const scale = Math.max(0.7, canvasScale || 1);
+  const sizeScale = Math.max(0.85, Math.min(canvasScale || 1, 1.25));
+  const speedScale = Math.max(0.8, Math.min(canvasScale || 1, 1.2));
   const layers = reduceMotion ? 1 : 3;
-  // Dense enough to read like the winter calendar's snowfall, rising instead of falling.
-  const perLayer = reduceMotion
-    ? 36
-    : Math.max(coarse ? 220 : 440, Math.round((coarse ? 300 : 640) * scale));
+  // Good number of floating embers (~195-255 total across 3 layers), far below
+  // the 1,500+ count that caused slowdowns and covered the mandala.
+  const perLayer = reduceMotion ? 22 : coarse ? 65 : 85;
 
   embers = [];
   for (let layer = 0; layer < layers; layer++) {
     const depth = layer + 1;
     for (let i = 0; i < perLayer; i++) {
-      const gold = random() < 0.45;
+      const gold = random() < 0.6;
       embers.push({
         x: random(width),
-        // Keep the sky as full as the fire at the bottom.
-        y: random() < 0.6 ? random(height * 0.7) : random(height),
-        speed: random(0.18, 0.55) * depth * (reduceMotion ? 0.4 : 1),
-        size: random(1.5, 2.8) * (0.65 + depth * 0.38) * Math.min(scale, 1.6),
-        baseAlpha: random(0.55, 1) * (0.55 + depth * 0.18),
+        y: random(height),
+        speed: random(0.55, 1.25) * (0.7 + depth * 0.25) * speedScale * (reduceMotion ? 0.4 : 1),
+        size: random(2.5, 5.0 + layer * 0.5) * sizeScale,
+        // Moderate warm opacity (135..180 out of 255) — visible without glaring.
+        alpha: random(135, 180) * (0.82 + depth * 0.06),
         phase: random(TWO_PI),
-        flicker: random(0.035, 0.08),
-        sway: random(0.012, 0.028),
-        drift: random(0.22, 0.65) * (depth === 1 ? 0.45 : 1),
-        r: 255,
-        g: gold ? random(186, 230) : random(110, 168),
-        b: gold ? random(40, 90) : random(12, 36),
+        flicker: random(0.035, 0.075),
+        sway: random(0.018, 0.036),
+        drift: random(0.32, 0.78) * (depth === 1 ? 0.6 : 1),
+        g: gold ? random(195, 232) : random(145, 188),
+        b: gold ? random(75, 125) : random(28, 60),
       });
     }
   }
