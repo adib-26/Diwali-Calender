@@ -2442,7 +2442,7 @@ function rebuildEmbers() {
       embers.push({
         x: random(width),
         y: random(height),
-        speed: random(0.55, 1.25) * (0.7 + depth * 0.25) * speedScale * (reduceMotion ? 0.4 : 1),
+        speed: random(0.22, 0.52) * (0.75 + depth * 0.16) * speedScale * (reduceMotion ? 0.4 : 1),
         size: random(2.5, 5.0 + layer * 0.5) * sizeScale,
         // Moderate warm opacity (135..180 out of 255) — visible without glaring.
         alpha: random(135, 180) * (0.82 + depth * 0.06),
