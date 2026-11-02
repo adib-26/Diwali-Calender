@@ -2442,14 +2442,14 @@ function rebuildEmbers() {
       embers.push({
         x: random(width),
         y: random(height),
-        speed: random(0.22, 0.52) * (0.75 + depth * 0.16) * speedScale * (reduceMotion ? 0.4 : 1),
+        speed: random(0.4, 0.85) * (0.85 + depth * 0.12) * speedScale * (reduceMotion ? 0.4 : 1),
         size: random(2.5, 5.0 + layer * 0.5) * sizeScale,
         // Moderate warm opacity (135..180 out of 255) — visible without glaring.
         alpha: random(135, 180) * (0.82 + depth * 0.06),
         phase: random(TWO_PI),
         flicker: random(0.035, 0.075),
-        sway: random(0.018, 0.036),
-        drift: random(0.32, 0.78) * (depth === 1 ? 0.6 : 1),
+        sway: random(0.01, 0.02),
+        drift: random(0.05, 0.14),
         g: gold ? random(195, 232) : random(145, 188),
         b: gold ? random(75, 125) : random(28, 60),
       });
