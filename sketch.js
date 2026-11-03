@@ -1774,9 +1774,9 @@ function showCardThenVideo(diya, experience) {
   window.setTimeout(() => {
     if (token !== cardToVideoToken || !revealCardEl || !dimOverlayEl) return;
     document.body.appendChild(dimOverlayEl);
+    playVideo(videoSrc, null, { keepCard: true, crossfade: true });
     dimOverlayEl.classList.add("is-fading-out");
     revealCardEl.classList.add("is-fading-out");
-    playVideo(videoSrc, null, { keepCard: true, crossfade: true });
 
     let finished = false;
     const finish = () => {

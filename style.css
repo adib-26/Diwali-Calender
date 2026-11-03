@@ -1878,24 +1878,11 @@ canvas {
   animation: videoCloseReveal 0.42s ease-out 0.18s both;
 }
 .video-modal-overlay.is-crossfade {
-  animation: videoVeilIn 1.15s cubic-bezier(0.45, 0, 0.2, 1) both;
+  background: #000;
 }
-.video-modal-overlay.is-crossfade .native-video-player {
-  animation: videoDissolveIn 1.15s cubic-bezier(0.45, 0, 0.2, 1) both;
-}
+.video-modal-overlay.is-crossfade .native-video-player,
 .video-modal-overlay.is-crossfade .video-modal-close {
-  animation: videoCloseReveal 0.5s ease-out 0.55s both;
-}
-
-@keyframes videoVeilIn {
-  from { background-color: rgba(0, 0, 0, 0); }
-  to   { background-color: rgba(0, 0, 0, 0.92); }
-}
-
-@keyframes videoDissolveIn {
-  0%   { opacity: 0; transform: scale(0.985); }
-  28%  { opacity: 0; transform: scale(0.99); }
-  100% { opacity: 1; transform: scale(1); }
+  animation: none;
 }
 
 .video-modal-overlay.has-special-intro .native-video-player {
