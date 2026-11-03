@@ -208,12 +208,13 @@ function queueDeferredAssetLoad() {
 
 async function loadDeferredAssets() {
   const prototypeLayers = diyaConfig?.prototypeMandala?.layers || [];
-  const assetPaths = [
-    ["outer", "assets/mandala/mandala-outer.png"],
-    ["middle", "assets/mandala/mandala-middle.png"],
-    ["center", "assets/mandala/mandala-center.png"],
-    ...prototypeLayers.map((layer) => [layer.key, layer.path]),
-  ];
+  const assetPaths = prototypeLayers.length
+    ? prototypeLayers.map((layer) => [layer.key, layer.path])
+    : [
+        ["outer", "assets/mandala/mandala-outer.png"],
+        ["middle", "assets/mandala/mandala-middle.png"],
+        ["center", "assets/mandala/mandala-center.png"],
+      ];
   const images = await Promise.all(assetPaths.map(([, path]) => loadImageCompat(path)));
   assetPaths.forEach(([key], index) => { mandalaImages[key] = images[index]; });
 
@@ -262,7 +263,6 @@ function finishSetup() {
   initCalendarGuide();
   syncCreditsLinkPosition();
   configureRenderRate();
-  queueDeferredAssetLoad();
 
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) noLoop();
@@ -287,10 +287,12 @@ function initInteractionSounds() {
 
 function revealInitialScene() {
   // Let p5 paint the scene at least once before fading out the guard. A second
-  // frame avoids a one-frame flash on slower mobile GPUs.
+  // frame avoids a one-frame flash on slower mobile GPUs. The heavy mandala
+  // files start only after that, so they cannot hold the loading screen up.
   requestAnimationFrame(() => requestAnimationFrame(() => {
     document.body.classList.add("is-ready");
     document.getElementById("loading-screen")?.setAttribute("aria-hidden", "true");
+    queueDeferredAssetLoad();
   }));
 }
 
@@ -717,7 +719,7 @@ function drawSceneBrightness(litCount) {
   const ratio = litCount / Math.max(diyas.length, 1);
   const ctx   = drawingContext;
   const grad  = ctx.createLinearGradient(0, height, 0, 0);
-  const maxA  = 0.28 * ratio;
+  const maxA  = 0.14 * ratio;
 
   grad.addColorStop(0,    `rgba(255, 130, 0, ${maxA})`);
   grad.addColorStop(0.35, `rgba(255, 100, 0, ${maxA * 0.45})`);
@@ -846,7 +848,9 @@ function drawPrototypeMandala() {
       const img = mandalaImages[layer.key];
       if (!img) continue;
       const reveal = ringAlpha[layer.ring] || 0;
-      const alpha = Math.min(0.92, (layer.baseAlpha ?? 0.2) + reveal * 0.62);
+      // The pattern still comes into focus as rings are lit, but it stays
+      // translucent so the lamps drawn on top of it remain readable.
+      const alpha = Math.min(0.52, (layer.baseAlpha ?? 0.2) + reveal * 0.14);
       tint(255, alpha * 255);
       const size = width * (layer.size ?? 0.5);
       image(img, cx, cy, size, size);
@@ -976,8 +980,8 @@ function openDiyaContent(d, result, isFirstLight = false) {
   }
 
   const experience = getLampExperience(d, result);
-  if (experience.type === "bonus-video") {
-    playVideo(experience.media?.src, isFirstLight ? experience.videoIntro : null);
+  if (experience.type === "bonus-video" || experience.cardVideo?.src) {
+    showCardThenVideo(d, experience);
     return;
   }
   if (experience.type === "popup-image") {
@@ -1747,6 +1751,48 @@ function initFestivalEasterEgg(cardEl, egg, onComplete) {
   }));
 }
 
+let cardToVideoToken = 0;
+
+/* A video lamp first shows its card, lets that card fade, then starts the film. */
+function showCardThenVideo(diya, experience) {
+  const intro = experience.videoIntro;
+  const videoSrc = experience.cardVideo?.src || (experience.media?.kind === "video" ? experience.media.src : null);
+  const imageSrc = experience.media?.kind === "image"
+    ? experience.media.src
+    : (diya.cardImage || intro?.backgroundImage || null);
+  showInfoCard(diya, {
+    type: "info-card",
+    title: experience.title || intro?.title || diya.theme,
+    description: intro?.message || experience.description || diya.description,
+    media: imageSrc ? { kind: "image", src: imageSrc } : null
+  });
+
+  const token = ++cardToVideoToken;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const holdMs = reducedMotion ? 700 : 1700;
+  const fadeMs = reducedMotion ? 0 : 1150;
+  window.setTimeout(() => {
+    if (token !== cardToVideoToken || !revealCardEl || !dimOverlayEl) return;
+    document.body.appendChild(dimOverlayEl);
+    dimOverlayEl.classList.add("is-fading-out");
+    revealCardEl.classList.add("is-fading-out");
+    playVideo(videoSrc, null, { keepCard: true, crossfade: true });
+
+    let finished = false;
+    const finish = () => {
+      if (finished || token !== cardToVideoToken) return;
+      finished = true;
+      if (revealCardEl) { revealCardEl.remove(); revealCardEl = null; }
+      if (dimOverlayEl) { dimOverlayEl.remove(); dimOverlayEl = null; }
+    };
+    revealCardEl.addEventListener("animationend", (event) => {
+      if (event.target !== revealCardEl || event.animationName !== "cardDissolve") return;
+      finish();
+    });
+    window.setTimeout(finish, fadeMs + 80);
+  }, holdMs);
+}
+
 /* Simple information/event card: background image, title, and one clear
    description. Festival-day cards can also contain a hidden flip-card game. */
 function showInfoCard(diya, experience) {
@@ -1866,6 +1912,7 @@ function showInfoCard(diya, experience) {
 }
 
 function teardownRevealCard() {
+  cardToVideoToken += 1;
   const video = revealCardEl?.querySelector("video");
   if (video) { video.pause(); video.removeAttribute("src"); video.load(); }
   if (revealCardEl) { revealCardEl.remove(); revealCardEl = null; }
@@ -2108,7 +2155,7 @@ function exitVideo() {
     videoPlayerEl.load();
   }
   if (videoPlayerContainer) {
-    videoPlayerContainer.classList.remove("is-opening");
+    videoPlayerContainer.classList.remove("is-opening", "is-crossfade");
     videoPlayerContainer.classList.remove("has-special-intro");
     videoPlayerContainer.style.display = "none";
   }
@@ -2118,9 +2165,13 @@ function exitVideo() {
 }
 
 /* ── Show the player, set src, and begin playback ── */
-function playVideo(src, videoIntro = null) {
-  teardownRevealCard();
-  teardownSpringPopup();   // dismiss any active 3D popup so it can't overlap the video
+function playVideo(src, videoIntro = null, options = {}) {
+  if (!options.keepCard) {
+    teardownRevealCard();
+    teardownSpringPopup();   // dismiss any active 3D popup so it can't overlap the video
+  } else {
+    teardownSpringPopup();
+  }
   initVideoPlayer();
 
   videoPlayerHint.textContent = "Playing muted — use the player controls to turn on sound.";
@@ -2146,11 +2197,11 @@ function playVideo(src, videoIntro = null) {
     videoSpecialIntroEl.style.removeProperty("--video-special-intro-image");
     videoSpecialIntroEl.hidden = true;
   }
-  videoPlayerContainer.classList.remove("is-opening");
+  videoPlayerContainer.classList.remove("is-opening", "is-crossfade");
   videoPlayerContainer.style.display = "flex";
   // Restart the staged entrance whenever the singleton player is reused.
   void videoPlayerContainer.offsetWidth;
-  if (!videoIntro) videoPlayerContainer.classList.add("is-opening");
+  if (!videoIntro) videoPlayerContainer.classList.add(options.crossfade ? "is-crossfade" : "is-opening");
   videoOverlayWrapper = videoPlayerContainer;
 
   if (videoIntro) return;

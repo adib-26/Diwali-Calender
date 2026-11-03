@@ -29,14 +29,14 @@ window.DIWALI_DAYS_DATA = {
       {
         "key": "prototypeOuter",
         "ring": 1,
-        "path": "assets/21-day-reference-images/mandala-outer-8.png",
+        "path": "assets/21-day-reference-images/mandala-outer-8.webp",
         "size": 0.88,
         "baseAlpha": 0.36
       },
       {
         "key": "prototypeCentre",
         "ring": 4,
-        "path": "assets/21-day-reference-images/mandala-centre-detailed.png",
+        "path": "assets/21-day-reference-images/mandala-centre-detailed.webp",
         "size": 0.48,
         "baseAlpha": 0.42
       }
@@ -448,7 +448,7 @@ window.DIWALI_DAYS_DATA = {
       "theme": "Happy Diwali!",
       "emoji": "🎇",
       "description": "The central Diwali observance and the new-moon night. Many households perform Lakshmi Puja, light rows of diyas, share food, and gather with family. The stories and rituals associated with this night differ by region, faith, and household.",
-      "payload": "mp4:assets/videos/bonus/lantern-breeze.mp4",
+      "payload": "mp4:assets/videos/bonus/nov-8-diwali.mp4",
       "pos": {
         "x": 0.2486,
         "y": 0.7931,

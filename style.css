@@ -643,6 +643,28 @@ canvas {
   to   { transform: translateY(0) scale(1);       opacity: 1; }
 }
 
+.dim-overlay.is-fading-out {
+  position: fixed;
+  inset: 0;
+  z-index: 10002;
+  pointer-events: none;
+  animation: cardVeilFade 1.15s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+}
+
+.reveal-card.is-fading-out {
+  animation: cardDissolve 1.15s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+}
+
+@keyframes cardVeilFade {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes cardDissolve {
+  0%   { opacity: 1; transform: scale(1); filter: blur(0); }
+  100% { opacity: 0; transform: scale(1.04); filter: blur(10px); }
+}
+
 /* Decorative rangoli-inspired corner marks — plain (non-image) cards only */
 .reveal-card:not(.has-image)::before,
 .reveal-card:not(.has-image)::after {
@@ -1855,6 +1877,26 @@ canvas {
 .video-modal-overlay.is-opening .video-modal-close {
   animation: videoCloseReveal 0.42s ease-out 0.18s both;
 }
+.video-modal-overlay.is-crossfade {
+  animation: videoVeilIn 1.15s cubic-bezier(0.45, 0, 0.2, 1) both;
+}
+.video-modal-overlay.is-crossfade .native-video-player {
+  animation: videoDissolveIn 1.15s cubic-bezier(0.45, 0, 0.2, 1) both;
+}
+.video-modal-overlay.is-crossfade .video-modal-close {
+  animation: videoCloseReveal 0.5s ease-out 0.55s both;
+}
+
+@keyframes videoVeilIn {
+  from { background-color: rgba(0, 0, 0, 0); }
+  to   { background-color: rgba(0, 0, 0, 0.92); }
+}
+
+@keyframes videoDissolveIn {
+  0%   { opacity: 0; transform: scale(0.985); }
+  28%  { opacity: 0; transform: scale(0.99); }
+  100% { opacity: 1; transform: scale(1); }
+}
 
 .video-modal-overlay.has-special-intro .native-video-player {
   display: none;
@@ -1986,7 +2028,10 @@ canvas {
 @media (prefers-reduced-motion: reduce) {
   .video-modal-overlay.is-opening,
   .video-modal-overlay.is-opening .native-video-player,
-  .video-modal-overlay.is-opening .video-modal-close { animation: none; }
+  .video-modal-overlay.is-opening .video-modal-close,
+  .video-modal-overlay.is-crossfade,
+  .video-modal-overlay.is-crossfade .native-video-player,
+  .video-modal-overlay.is-crossfade .video-modal-close { animation: none; }
 }
 
 /* ─────────────────────────────────────────
@@ -2145,7 +2190,9 @@ canvas {
   .dim-overlay {
     animation-duration: 0.01ms;
   }
-  .reveal-card {
+  .reveal-card,
+  .reveal-card.is-fading-out,
+  .dim-overlay.is-fading-out {
     animation-duration: 0.01ms;
   }
   .card-image-photo {

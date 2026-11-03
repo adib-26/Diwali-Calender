@@ -16,15 +16,24 @@
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Poppins:wght@300;400&display=swap"
     rel="stylesheet"
+    media="print"
+    onload="this.media='all'"
   />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Poppins:wght@300;400&display=swap"
+      rel="stylesheet"
+    />
+  </noscript>
 
-  <!-- p5.js -->
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.js"></script>
+  <!-- p5.js is served with the site so a blocked CDN cannot hold the calendar back. -->
+  <script src="vendor/p5.min.js"></script>
 
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=card-dissolve" />
 </head>
 <body>
   <!-- Keeps interface controls from flashing before the canvas has painted. -->
@@ -75,12 +84,12 @@
        to local files under file://, which is why this must load as a plain
        script instead of being read with p5's loadJSON(). Regenerate this
        file from assets/diwali_days.json via tools/sync_diwali_days_js.py. -->
-  <script src="assets/diwali-days-data.js?v=unlock-all"></script>
-  <script src="assets/diwali-experiences.js?v=marigold-video"></script>
+  <script src="assets/diwali-days-data.js?v=nov8-video"></script>
+  <script src="assets/diwali-experiences.js?v=named-card-videos"></script>
 
   <!-- Diya and ScrollBanner classes must load before sketch -->
-  <script src="diya.js?v=device-tz"></script>
+  <script src="diya.js?v=flame-softer"></script>
   <script src="scroll.js"></script>
-  <script src="sketch.js?v=unlock-all"></script>
+  <script src="sketch.js?v=card-fade-video"></script>
 </body>
 </html>

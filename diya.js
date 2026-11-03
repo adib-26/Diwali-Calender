@@ -270,7 +270,7 @@ class Diya {
     const x = this.px(), y = this.py(), w = this.pw(), h = this.ph();
     this.drawDiyaBody(x, y, w, h, 1);
     const wick      = this.getWickTip();
-    const flicker   = 1 + Math.sin(frameCount * 0.05 + this.flamePhase) * 0.07;
+    const flicker   = 1 + Math.sin(frameCount * 0.05 + this.flamePhase) * 0.08;
     const flameSize = this.special ? w * 0.46 * flicker : w * 0.30 * flicker;
     this.drawFlame(wick.x, wick.y, flameSize, 1);
     this.drawAmbientGlow(wick.x, wick.y, this.special ? w * 1.6 : w);
@@ -304,10 +304,10 @@ class Diya {
       cDark  = color(58, 26, 8);
       cBody  = litProg > 0
         ? lerpColor(color(118, 58, 22), color(208, 108, 46), litProg)
-        : color(88, 44, 18);
+        : color(96, 48, 20);
       cRim   = litProg > 0
         ? lerpColor(color(152, 80, 38), color(242, 148, 70), litProg)
-        : color(120, 64, 32);
+        : color(128, 70, 34);
       cInner = color(38, 18, 6);
     }
 
@@ -322,7 +322,7 @@ class Diya {
     // Near-straight walls (slight trapezoid), rounded only at the very base.
     fill(cBody);
     stroke(cDark);
-    strokeWeight(1.5);
+    strokeWeight(1.6);
     beginShape();
     // left rim
     vertex(cx - bW * 0.50, rimY);
@@ -436,26 +436,28 @@ class Diya {
     if (!cur || !next) return;
 
     const blend  = this.smoothBlend();
-    const drawH  = size * 2.5;
+    const drawH  = size * 2.5 * 1.5;
     const drawW  = drawH * (cur.width / cur.height);
+    // Keep the base of the flame on the wick while the sprite grows upward.
+    const flameY = size * 0.2 - drawH / 2;
 
     push();
     noStroke();
 
-    // Outer halo — soft warm bloom behind the sprite frames
-    fill(255, 120, 0, 22 * alpha);
-    ellipse(cx + wobble, cy - size * 1.1, size * 4.0, size * 4.5);
+    // Outer halo — a brighter pulse so the flame stays visible on the mandala
+    fill(255, 110, 0, 16 * alpha);
+    ellipse(cx + wobble, cy - size * 1.1, size * 3.2, size * 3.6);
 
     push();
     translate(cx + wobble, cy);
     imageMode(CENTER);
 
-    tint(255, 255 * alpha * (1 - blend));
-    image(cur, 0, -drawH * 0.42, drawW, drawH);
+    tint(255, 200 * alpha * (1 - blend));
+    image(cur, 0, flameY, drawW, drawH);
 
     if (blend > 0) {
-      tint(255, 255 * alpha * blend);
-      image(next, 0, -drawH * 0.42, drawW, drawH);
+      tint(255, 200 * alpha * blend);
+      image(next, 0, flameY, drawW, drawH);
     }
 
     noTint();
@@ -477,7 +479,7 @@ class Diya {
     // Fewer, wider steps on mobile to halve the ellipse draw-call count per lit diya
     const glowStep = (typeof isMobile !== "undefined" && isMobile) ? w * 0.52 : w * 0.30;
     for (let r = w * 1.8; r > w * 0.25; r -= glowStep) {
-      fill(255, 168, 42, map(r, w * 0.25, w * 1.8, 32, 0));
+      fill(255, 160, 36, map(r, w * 0.25, w * 1.8, 18, 0));
       ellipse(cx, cy - w * 0.18, r * 2, r * 1.3);
     }
     pop();

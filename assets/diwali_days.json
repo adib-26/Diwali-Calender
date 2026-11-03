@@ -13,8 +13,8 @@
   "prototypeMandala": {
     "guideColor": [244, 183, 67],
     "layers": [
-      { "key": "prototypeOuter", "ring": 1, "path": "assets/21-day-reference-images/mandala-outer-8.png", "size": 0.88, "baseAlpha": 0.36 },
-      { "key": "prototypeCentre", "ring": 4, "path": "assets/21-day-reference-images/mandala-centre-detailed.png", "size": 0.48, "baseAlpha": 0.42 }
+      { "key": "prototypeOuter", "ring": 1, "path": "assets/21-day-reference-images/mandala-outer-8.webp", "size": 0.88, "baseAlpha": 0.36 },
+      { "key": "prototypeCentre", "ring": 4, "path": "assets/21-day-reference-images/mandala-centre-detailed.webp", "size": 0.48, "baseAlpha": 0.42 }
     ]
   },
   "_lampScaleNote": "Global size multiplier applied to every diya's pos.w/pos.h at load time (see hydrateDiyas() in sketch.js). 1 = default size, 1.15 = 15% bigger, 0.9 = 10% smaller. Each lamp keeps its own centre point, so scaling grows/shrinks it in place instead of shifting it. To resize just ONE lamp, edit that diya's own pos.w/pos.h below instead — lampScale multiplies on top of those.",
@@ -355,7 +355,7 @@
       "theme": "Happy Diwali!",
       "emoji": "🎇",
       "description": "The central Diwali observance and the new-moon night. Many households perform Lakshmi Puja, light rows of diyas, share food, and gather with family. The stories and rituals associated with this night differ by region, faith, and household.",
-      "payload": "mp4:assets/videos/bonus/lantern-breeze.mp4",
+      "payload": "mp4:assets/videos/bonus/nov-8-diwali.mp4",
       "pos": {
         "x": 0.2486,
         "y": 0.7931,
