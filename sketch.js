@@ -428,6 +428,9 @@ function calendarDateStamp(now = new Date()) {
 }
 
 function isDiyaUnlocked(diya, today = calendarDateStamp()) {
+  // dateLockEnabled false opens every lamp now. The date comparison stays
+  // so locking can be turned back on by setting the flag to true.
+  if (diyaConfig && diyaConfig.dateLockEnabled === false) return true;
   return !diya.unlockDate || diya.unlockDate <= today;
 }
 

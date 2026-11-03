@@ -15,7 +15,8 @@ window.DIWALI_DAYS_DATA = {
     "background": "assets/images/backgrounds/diwali-background.png (664x997)"
   },
   "lampScale": 0.9,
-  "_unlockScheduleNote": "Each diya unlocks at the start of its unlockDate (YYYY-MM-DD) in the visitor's device timezone. Day 19 is 8 November 2026. Change these dates manually to set the calendar schedule.",
+  "_unlockScheduleNote": "Each diya unlocks at the start of its unlockDate (YYYY-MM-DD) in the visitor's device timezone. Day 19 is 8 November 2026. Set dateLockEnabled to true to enforce those dates; false leaves every lamp open while keeping the dates for later.",
+  "dateLockEnabled": false,
   "festivalStartDay": 17,
   "mainDiwaliDay": 19,
   "prototypeMandala": {
