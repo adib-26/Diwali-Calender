@@ -515,6 +515,7 @@ function updateProgressBadge() {
       progressBadgeEl.classList.add("is-flipping");
       progressBadgeEl.addEventListener("animationend", () => progressBadgeEl?.classList.remove("is-flipping"), { once: true });
     }
+    syncProgressBadgePosition();
     return;
   }
 
@@ -537,6 +538,7 @@ function updateProgressBadge() {
   `;
   progressBadgeEl.dataset.countdownValue = displayRemaining;
   progressBadgeEl.setAttribute("aria-label", label);
+  syncProgressBadgePosition();
 
   if (previousValue && previousValue !== displayRemaining) {
     const flipCards = progressBadgeEl.querySelectorAll(".flip-number");
@@ -668,8 +670,9 @@ function syncProgressBadgePosition() {
   const clockScale = Math.min(1, Math.max(0.78, cr.width / 450));
   progressBadgeEl.style.setProperty("--calendar-clock-scale", clockScale.toFixed(3));
 
-  let rightFrac = 0.05;
-  let topFrac   = 0.045;
+  let edgeFrac = 0.05;
+  let topFrac  = 0.045;
+  const celebrating = progressBadgeEl.classList.contains("is-celebration");
 
   if (scrollBanner && scrollBanner.image && scrollBanner.image.width) {
     // Mirrors the box math in ScrollBanner.draw(): bannerW is a fraction of
@@ -678,15 +681,25 @@ function syncProgressBadgePosition() {
     const bannerHFrac = bannerWFrac * (width / height) *
       (scrollBanner.image.height / scrollBanner.image.width);
 
-    const bannerRightFrac  = scrollBanner.x + bannerWFrac / 2;
+    const bannerEdgeFrac = celebrating
+      ? scrollBanner.x - bannerWFrac / 2
+      : 1 - (scrollBanner.x + bannerWFrac / 2);
     const bannerBottomFrac = scrollBanner.y + bannerHFrac / 2;
 
-    rightFrac = Math.max(0.01, 1 - bannerRightFrac);
-    topFrac   = bannerBottomFrac + 0.012; // small gap below the ribbon
+    edgeFrac = Math.max(0.04, bannerEdgeFrac);
+    topFrac  = bannerBottomFrac + 0.012; // small gap below the ribbon
   }
 
-  progressBadgeEl.style.right = `${pr.right - cr.right + cr.width * rightFrac}px`;
-  progressBadgeEl.style.top   = `${cr.top - pr.top + cr.height * topFrac}px`;
+  const top = `${cr.top - pr.top + cr.height * topFrac}px`;
+  progressBadgeEl.style.top = top;
+  progressBadgeEl.style.transformOrigin = celebrating ? "top left" : "top right";
+  if (celebrating) {
+    progressBadgeEl.style.right = "auto";
+    progressBadgeEl.style.left = `${cr.left - pr.left + cr.width * edgeFrac}px`;
+  } else {
+    progressBadgeEl.style.left = "auto";
+    progressBadgeEl.style.right = `${pr.right - cr.right + cr.width * edgeFrac}px`;
+  }
 }
 
 /* Keeps the contributors icon inside the lower-right edge of the calendar

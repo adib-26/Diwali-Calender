@@ -524,16 +524,22 @@ canvas {
 .flip-number.is-flipping .flip-number-upper { animation: countdownFlip 520ms cubic-bezier(0.25, 0.72, 0.35, 1); }
 
 .flip-happy-message {
-  padding: 2px 5px;
+  padding: 4px 10px;
   color: #fff0ad;
-  font-size: 11px;
-  letter-spacing: 1px;
+  font-size: 20px;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
   text-shadow: 0 0 9px rgba(255, 205, 54, 0.75);
   white-space: nowrap;
 }
 
-.progress-badge.is-celebration { background: rgba(104, 28, 5, 0.76); border-color: rgba(255, 209, 80, 0.9); }
+.progress-badge.is-celebration {
+  min-width: 15em;
+  justify-content: flex-start;
+  padding: 10px 22px;
+  background: rgba(104, 28, 5, 0.76);
+  border-color: rgba(255, 209, 80, 0.9);
+}
 .progress-badge.is-celebration.is-flipping { animation: diwaliBadgeReveal 520ms ease-out; }
 
 @keyframes countdownFlip {
@@ -556,6 +562,8 @@ canvas {
   }
   .flip-countdown-intro, .flip-countdown-unit { font-size: 9px; }
   .flip-number { width: 32px; height: 34px; font-size: 22px; }
+  .flip-happy-message { font-size: 26px; }
+  .progress-badge.is-celebration { min-width: 16em; padding: 12px 28px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
