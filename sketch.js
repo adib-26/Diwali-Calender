@@ -250,7 +250,7 @@ function finishSetup() {
   let c = createCanvas(bg.width, bg.height);
   canvasEl = c;
   c.parent("canvas-container");
-  pixelDensity(Math.min(window.devicePixelRatio || 1, 2));
+  applyPixelDensity();
 
   initInteractionSounds();
   if (diyaConfig) hydrateDiyas(diyaConfig);
@@ -274,15 +274,21 @@ function finishSetup() {
 
 function initInteractionSounds() {
   openSound = new Audio("assets/sounds/match-ignite.flac");
-  openSound.preload = "auto";
+  openSound.preload = "none";
   openSound.volume = 0.3;
 
   // Pixabay: "ding" by freesound_community (sound ID 101492).
   // Rewinding before playback in playSoundSafely() makes it fire on every
   // popup opening, including a lamp's later re-opens.
   popupSound = new Audio("assets/sounds/pixabay-ding-freesound-community.mp3");
-  popupSound.preload = "auto";
+  popupSound.preload = "none";
   popupSound.volume = 0.45;
+
+  const warmSounds = () => {
+    openSound.load();
+    popupSound.load();
+  };
+  window.addEventListener("pointerdown", warmSounds, { once: true, passive: true });
 }
 
 function revealInitialScene() {
@@ -418,6 +424,15 @@ function configureRenderRate() {
   reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || false;
   compactViewport = window.matchMedia?.("(pointer: coarse)").matches || window.innerWidth < 768;
   frameRate(reducedMotion ? 20 : compactViewport ? 30 : 45);
+  applyPixelDensity();
+}
+
+/* Phones already scale a small canvas up. A full 2x backing store makes
+   every flame frame expensive without a visible gain at this size. */
+function applyPixelDensity() {
+  const dpr = window.devicePixelRatio || 1;
+  const cap = compactViewport ? 1.25 : 1.75;
+  pixelDensity(Math.min(dpr, cap));
 }
 
 /* ── Date-based lamp access ───────────────────────────────────────────────
