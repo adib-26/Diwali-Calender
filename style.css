@@ -625,7 +625,7 @@ canvas {
     0 12px 36px rgba(0, 0, 0, 0.55),
     0 0 55px rgba(255, 150, 0, 0.22),
     inset 0 0 40px rgba(255, 110, 0, 0.06);
-  animation: cardReveal 0.9s cubic-bezier(0, 0, 0.38, 0.9) forwards;
+  animation: cardReveal 0.9s cubic-bezier(0, 0, 0.38, 0.9);
 }
 
 /* Small/large phones — a touch wider once there's room, so the two-line
@@ -647,8 +647,8 @@ canvas {
 }
 
 @keyframes cardReveal {
-  from { transform: translateY(12px) scale(0.98); opacity: 0; }
-  to   { transform: translateY(0) scale(1);       opacity: 1; }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .dim-overlay.is-fading-out {
@@ -799,7 +799,6 @@ canvas {
   flex-grow: 1;
   overflow-y: auto;
   overscroll-behavior-y: contain;      /* scroll chaining never bleeds into the page behind it */
-  -webkit-overflow-scrolling: touch;
   touch-action: pan-y;                 /* allow vertical scroll inside the card */
   min-height: 0;
   padding: 18px 16px 8px 24px;
@@ -1068,42 +1067,39 @@ canvas {
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
 }
 
-/* Three experimental cards hide a small treasure at their base. The card
-   itself becomes the player: its back holds a vertical video and returns to
-   the front automatically when playback completes. */
+/* A hidden game or film sits behind the story. The two sides swap in place.
+   A 3D spin is avoided because iOS paints that text upside down. */
 .video-treasure-card {
   display: block;
   overflow: visible;
   background: transparent;
   border: 0;
   box-shadow: none;
-  perspective: 1200px;
 }
 .card-flip-stage {
   position: relative;
-  transform-style: preserve-3d;
-  transition: transform 650ms cubic-bezier(0.22, 0.9, 0.3, 1);
-}
-.video-treasure-card.is-video-flipped .card-flip-stage {
-  transform: rotateY(180deg);
 }
 .video-treasure-card.is-video-flipped .card-flip-front {
+  visibility: hidden;
   pointer-events: none;
 }
 .card-flip-back {
+  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
 }
 .video-treasure-card.is-video-flipped .card-flip-back {
+  opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 .card-flip-face {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   overflow: hidden;
   border: 1.5px solid #b8780a;
   border-radius: 22px;
   background: linear-gradient(160deg, #1c0900 0%, #3a1500 60%, #1c0900 100%);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 55px rgba(255, 150, 0, 0.22), inset 0 0 40px rgba(255, 110, 0, 0.06);
+  transition: opacity 420ms ease;
 }
 .card-flip-front {
   position: relative;
@@ -1159,7 +1155,6 @@ canvas {
   flex-direction: column;
   padding: 0;
   box-sizing: border-box;
-  transform: rotateY(180deg);
   background: #090300;
 }
 .card-flip-video {
@@ -1185,7 +1180,6 @@ canvas {
 .video-treasure-card.has-easter-egg .card-game-back {
   overflow-y: auto;
   overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
 }
 .easter-game {
   position: relative;
@@ -1247,7 +1241,35 @@ canvas {
   filter: grayscale(1) opacity(0.35);
   transition: filter 180ms ease, transform 180ms ease;
 }
-.tray-slot.is-filled { filter: none; transform: scale(1.08); }
+.tray-slot.is-filled {
+  filter: none;
+  border-style: solid;
+  background: radial-gradient(circle, rgba(255, 214, 120, 0.28), rgba(90, 36, 6, 0.2) 70%);
+}
+[data-game="auspicious-tray"] .easter-choice-row { flex-wrap: nowrap; }
+[data-game="auspicious-tray"] .easter-choice:hover,
+[data-game="auspicious-tray"] .easter-choice:focus-visible,
+[data-game="auspicious-tray"] .easter-choice.is-dragging-source { transform: none; }
+[data-game="auspicious-tray"] .easter-choice.is-dragging-source { opacity: 0.35; }
+[data-game="auspicious-tray"] .easter-choice.is-placed {
+  display: none;
+}
+[data-game="auspicious-tray"] .tray-slot {
+  overflow: hidden;
+  filter: none;
+  transform: none;
+}
+[data-game="auspicious-tray"] .tray-slot .easter-sprite {
+  width: 34px;
+  height: 34px;
+}
+.tray-drag-ghost {
+  position: fixed;
+  z-index: 10050;
+  margin: 0;
+  pointer-events: none;
+  transform: none;
+}
 .easter-sprite {
   display: block;
   width: 100%;

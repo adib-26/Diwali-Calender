@@ -1390,18 +1390,76 @@ function initFestivalEasterEgg(cardEl, egg, onComplete) {
   };
 
   if (egg.kind === "auspicious-tray") {
+    const tray = game.querySelector(".easter-tray");
     const placeItem = (button) => {
-      if (completed || button.disabled) return;
-      const traySlot = game.querySelector(`.tray-slot[data-slot="${button.dataset.item}"]`);
-      traySlot.innerHTML = button.innerHTML;
+      if (completed || button.disabled || button.classList.contains("is-placed")) return;
+      const traySlot = tray.querySelector(`[data-slot="${button.dataset.item}"]`);
+      const sprite = button.querySelector("img");
+      if (!traySlot || traySlot.classList.contains("is-filled") || !sprite) return;
+      traySlot.replaceChildren(sprite.cloneNode(true));
       traySlot.classList.add("is-filled");
       button.disabled = true;
-      if (game.querySelectorAll(".easter-choice:disabled").length === 3) complete("Auspicious wishes gathered.");
+      button.classList.add("is-placed");
+      if (game.querySelectorAll(".easter-choice.is-placed").length === 3) complete("Auspicious wishes gathered.");
     };
-    game.querySelectorAll(".easter-choice").forEach((button) => button.addEventListener("click", () => {
-      if (!consumeDragClick(button)) placeItem(button);
-    }));
-    makeChoicesDraggable(game, ".easter-choice", ".easter-tray", placeItem);
+    const pointInTray = (x, y) => {
+      const rect = tray.getBoundingClientRect();
+      return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+    };
+    game.querySelectorAll(".easter-choice").forEach((button) => {
+      let pointerId = null;
+      let ghost = null;
+      let moved = false;
+      let startX = 0;
+      let startY = 0;
+      const clearGhost = () => {
+        ghost?.remove();
+        ghost = null;
+        button.classList.remove("is-dragging-source");
+      };
+      button.addEventListener("click", () => {
+        if (button.dataset.suppressClick === "true") {
+          delete button.dataset.suppressClick;
+          return;
+        }
+        placeItem(button);
+      });
+      button.addEventListener("pointerdown", (event) => {
+        if (button.disabled || pointerId !== null) return;
+        pointerId = event.pointerId;
+        moved = false;
+        startX = event.clientX;
+        startY = event.clientY;
+        button.setPointerCapture?.(event.pointerId);
+      });
+      button.addEventListener("pointermove", (event) => {
+        if (event.pointerId !== pointerId || button.disabled) return;
+        const dx = event.clientX - startX;
+        const dy = event.clientY - startY;
+        if (!moved && Math.hypot(dx, dy) < 8) return;
+        moved = true;
+        if (!ghost) {
+          ghost = button.cloneNode(true);
+          ghost.className = "easter-choice image-choice tray-drag-ghost";
+          document.body.appendChild(ghost);
+          button.classList.add("is-dragging-source");
+        }
+        const origin = button.getBoundingClientRect();
+        ghost.style.left = `${origin.left + dx}px`;
+        ghost.style.top = `${origin.top + dy}px`;
+      });
+      const endDrag = (event, cancelled) => {
+        if (event.pointerId !== pointerId) return;
+        const droppedOnTray = !cancelled && moved && pointInTray(event.clientX, event.clientY);
+        pointerId = null;
+        clearGhost();
+        if (!droppedOnTray) return;
+        button.dataset.suppressClick = "true";
+        placeItem(button);
+      };
+      button.addEventListener("pointerup", (event) => endDrag(event, false));
+      button.addEventListener("pointercancel", (event) => endDrag(event, true));
+    });
     return;
   }
 
