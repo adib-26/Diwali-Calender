@@ -410,8 +410,8 @@ function resizeToViewport() {
   resizeCanvas(newW, newH);
   configureRenderRate();
   if (canvasEl && canvasEl.elt) {
-    canvasEl.elt.style.setProperty("width",  `${newW}px`, "important");
-    canvasEl.elt.style.setProperty("height", `${newH}px`);
+    canvasEl.elt.style.setProperty("width", `${newW}px`, "important");
+    canvasEl.elt.style.setProperty("height", `${newH}px`, "important");
   }
   rebuildEmbers();
   syncMoonPosition();
@@ -951,6 +951,33 @@ function mouseReleased(event) {
   return _tapIsOnCanvas(event) ? false : true;
 }
 
+function canvasPoint(event) {
+  const canvas = canvasEl?.elt;
+  const point = event?.touches?.[0] || event?.changedTouches?.[0] || event;
+  if (!canvas || point?.clientX == null) return { x: mouseX, y: mouseY };
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return { x: mouseX, y: mouseY };
+  return {
+    x: (point.clientX - rect.left) / rect.width * width,
+    y: (point.clientY - rect.top) / rect.height * height,
+  };
+}
+
+function lampAtPoint(x, y) {
+  let nearest = null;
+  let nearestDistance = Infinity;
+  for (const diya of diyas) {
+    if (!diya.isHit(x, y)) continue;
+    const box = diya.hitBox();
+    const distance = (x - box.cx) ** 2 + (y - box.cy) ** 2;
+    if (distance < nearestDistance) {
+      nearest = diya;
+      nearestDistance = distance;
+    }
+  }
+  return nearest;
+}
+
 function mousePressed(event) {
   if (!_tapIsOnCanvas(event)) {
     _tapReleased = true;
@@ -962,11 +989,9 @@ function mousePressed(event) {
 
   if (isOverlayOpen()) return false;
 
-  for (let d of diyas) {
-    if (!d.isHit(mouseX, mouseY)) continue;
-    handleDiyaInteraction(d);
-    break;
-  }
+  const point = canvasPoint(event);
+  const diya = lampAtPoint(point.x, point.y);
+  if (diya) handleDiyaInteraction(diya);
 
   return false;
 }
@@ -1855,12 +1880,12 @@ function showCardThenVideo(diya, experience) {
 
   const token = ++cardToVideoToken;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const holdMs = reducedMotion ? 700 : 1700;
-  const fadeMs = reducedMotion ? 0 : 1150;
+  const holdMs = reducedMotion ? 700 : 1800;
+  const fadeMs = reducedMotion ? 0 : 2600;
   window.setTimeout(() => {
     if (token !== cardToVideoToken || !revealCardEl || !dimOverlayEl) return;
     document.body.appendChild(dimOverlayEl);
-    playVideo(videoSrc, null, { keepCard: true, crossfade: true });
+    playVideo(videoSrc, null, { keepCard: true, crossfade: true, deferPlayback: true });
     dimOverlayEl.classList.add("is-fading-out");
     revealCardEl.classList.add("is-fading-out");
 
@@ -1869,7 +1894,19 @@ function showCardThenVideo(diya, experience) {
       if (finished || token !== cardToVideoToken) return;
       finished = true;
       if (revealCardEl) { revealCardEl.remove(); revealCardEl = null; }
-      if (dimOverlayEl) { dimOverlayEl.remove(); dimOverlayEl = null; }
+      videoPlayerContainer?.classList.add("is-film-in");
+      if (videoPlayerEl) {
+        videoPlayerEl.autoplay = true;
+        const playback = videoPlayerEl.play();
+        if (playback && typeof playback.catch === "function") playback.catch(() => {});
+      }
+      if (!dimOverlayEl) return;
+      dimOverlayEl.classList.add("is-revealing-film");
+      const veil = dimOverlayEl;
+      window.setTimeout(() => {
+        if (veil.isConnected) veil.remove();
+        if (dimOverlayEl === veil) dimOverlayEl = null;
+      }, reducedMotion ? 0 : 900);
     };
     revealCardEl.addEventListener("animationend", (event) => {
       if (event.target !== revealCardEl || event.animationName !== "cardDissolve") return;
@@ -2241,7 +2278,7 @@ function exitVideo() {
     videoPlayerEl.load();
   }
   if (videoPlayerContainer) {
-    videoPlayerContainer.classList.remove("is-opening", "is-crossfade");
+    videoPlayerContainer.classList.remove("is-opening", "is-crossfade", "is-film-in");
     videoPlayerContainer.classList.remove("has-special-intro");
     videoPlayerContainer.style.display = "none";
   }
@@ -2275,7 +2312,7 @@ function playVideo(src, videoIntro = null, options = {}) {
   } else {
     videoPlayerEl.preload = "auto";
     videoPlayerEl.muted = false;
-    videoPlayerEl.autoplay = true;
+    videoPlayerEl.autoplay = !options.deferPlayback;
     videoPlayerHint.hidden = true;
     videoPlayerEl.src = src;
     videoPlayerEl.load();
@@ -2283,14 +2320,14 @@ function playVideo(src, videoIntro = null, options = {}) {
     videoSpecialIntroEl.style.removeProperty("--video-special-intro-image");
     videoSpecialIntroEl.hidden = true;
   }
-  videoPlayerContainer.classList.remove("is-opening", "is-crossfade");
+  videoPlayerContainer.classList.remove("is-opening", "is-crossfade", "is-film-in");
   videoPlayerContainer.style.display = "flex";
   // Restart the staged entrance whenever the singleton player is reused.
   void videoPlayerContainer.offsetWidth;
   if (!videoIntro) videoPlayerContainer.classList.add(options.crossfade ? "is-crossfade" : "is-opening");
   videoOverlayWrapper = videoPlayerContainer;
 
-  if (videoIntro) return;
+  if (videoIntro || options.deferPlayback) return;
 
   const p = videoPlayerEl.play();
   if (p && typeof p.then === "function") {

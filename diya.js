@@ -137,8 +137,26 @@ class Diya {
   ph() { return this.h * height; }
 
   isHit(mx, my) {
+    const box = this.hitBox();
+    return mx >= box.left && mx <= box.right && my >= box.top && my <= box.bottom;
+  }
+
+  /* The visible bowl, date, and spout. The full layout box is much taller
+     and overlaps the lamps on the next ring. */
+  hitBox() {
     const x = this.px(), y = this.py(), w = this.pw(), h = this.ph();
-    return mx >= x && mx <= x + w && my >= y && my <= y + h;
+    const cx = x + w * 0.44;
+    const rimY = y + h * 0.52;
+    const bW = w * 0.82;
+    const bH = h * 0.30;
+    return {
+      left: cx - bW * 0.58,
+      right: cx + bW * 0.58 + w * 0.24,
+      top: rimY - bH * 0.55,
+      bottom: rimY + bH * 1.2,
+      cx,
+      cy: rimY + bH * 0.35,
+    };
   }
 
   /* ── Returns wick tip in pixel coords (shared by draw methods) ── */

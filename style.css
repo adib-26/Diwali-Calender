@@ -108,12 +108,9 @@ body.is-leaving-for-contributors {
 
 canvas {
   display: block;
-  width: 100vw !important;
   max-width: 100vw;
-  height: auto !important;
   max-height: 100vh;
   max-height: 100dvh;
-  object-fit: contain;
   /* Tapping a diya shouldn't wait out the browser's double-tap-to-zoom
      delay, and shouldn't show a tap-highlight flash either. */
   touch-action: manipulation;
@@ -656,21 +653,31 @@ canvas {
   inset: 0;
   z-index: 10002;
   pointer-events: none;
-  animation: cardVeilFade 1.15s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+  background: rgba(0, 0, 0, 0.6);
+  animation: cardVeilToBlack 2.6s ease forwards;
+}
+
+.dim-overlay.is-fading-out.is-revealing-film {
+  animation: filmVeilLift 0.9s ease forwards;
 }
 
 .reveal-card.is-fading-out {
-  animation: cardDissolve 1.15s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+  animation: cardDissolve 2.6s ease forwards;
 }
 
-@keyframes cardVeilFade {
-  0%   { opacity: 1; }
-  100% { opacity: 0; }
+@keyframes cardVeilToBlack {
+  0%   { background-color: rgba(0, 0, 0, 0.6); }
+  100% { background-color: #000; }
+}
+
+@keyframes filmVeilLift {
+  from { opacity: 1; background-color: #000; }
+  to   { opacity: 0; background-color: #000; }
 }
 
 @keyframes cardDissolve {
-  0%   { opacity: 1; transform: scale(1); filter: blur(0); }
-  100% { opacity: 0; transform: scale(1.04); filter: blur(10px); }
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 /* Decorative rangoli-inspired corner marks — plain (non-image) cards only */
@@ -1913,6 +1920,16 @@ canvas {
 .video-modal-overlay.is-crossfade .native-video-player,
 .video-modal-overlay.is-crossfade .video-modal-close {
   animation: none;
+  opacity: 0;
+}
+.video-modal-overlay.is-crossfade.is-film-in .native-video-player,
+.video-modal-overlay.is-crossfade.is-film-in .video-modal-close {
+  animation: filmArrive 0.9s ease forwards;
+}
+
+@keyframes filmArrive {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .video-modal-overlay.has-special-intro .native-video-player {
@@ -2049,6 +2066,11 @@ canvas {
   .video-modal-overlay.is-crossfade,
   .video-modal-overlay.is-crossfade .native-video-player,
   .video-modal-overlay.is-crossfade .video-modal-close { animation: none; }
+  .video-modal-overlay.is-crossfade.is-film-in .native-video-player,
+  .video-modal-overlay.is-crossfade.is-film-in .video-modal-close {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 /* ─────────────────────────────────────────
